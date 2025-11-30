@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Traits\TableNameTrait;
+use App\Traits\UuidTrait;
 use Carbon\CarbonInterface;
 use Database\Factories\OrganizationFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -25,7 +26,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 final class Organization extends Model
 {
     /** @use HasFactory<OrganizationFactory> */
-    use HasFactory, SoftDeletes, TableNameTrait;
+    use HasFactory, SoftDeletes, TableNameTrait,UuidTrait;
 
     /**
      * @return array<string, string>

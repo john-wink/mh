@@ -6,6 +6,7 @@ use App\Models\Organization;
 use App\Models\Role;
 use App\Models\User;
 use App\Traits\TableNameTrait;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 // Test tableName() method with default parameter (plural)
@@ -89,6 +90,7 @@ test('trait can be used in custom models', function (): void {
     // Create a test model class that uses the trait
     $testModel = new class() extends Model
     {
+        use HasFactory;
         use TableNameTrait;
 
         protected $table = 'test_models';
