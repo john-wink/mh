@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\Organization;
+use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -163,7 +164,7 @@ it('can check if user has a specific permission', function (): void {
     $organization = Organization::factory()->create();
     $user = User::factory()->create(['organization_id' => $organization->id]);
     $role = Role::factory()->create(['organization_id' => $organization->id]);
-    $permission = App\Models\Permission::factory()->create(['slug' => 'edit-posts']);
+    $permission = Permission::factory()->create(['slug' => 'edit-posts']);
 
     $role->permissions()->attach($permission);
     $user->roles()->attach($role);
@@ -176,7 +177,7 @@ it('can check if user has any of the given permissions', function (): void {
     $organization = Organization::factory()->create();
     $user = User::factory()->create(['organization_id' => $organization->id]);
     $role = Role::factory()->create(['organization_id' => $organization->id]);
-    $editPermission = App\Models\Permission::factory()->create(['slug' => 'edit-posts']);
+    $editPermission = Permission::factory()->create(['slug' => 'edit-posts']);
 
     $role->permissions()->attach($editPermission);
     $user->roles()->attach($role);

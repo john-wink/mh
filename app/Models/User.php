@@ -10,6 +10,8 @@ use App\Traits\UuidTrait;
 use Carbon\CarbonInterface;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Database\Query\Builder;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -100,36 +102,6 @@ final class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-     * Scope to filter users by organization
-     *
-     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
-     */
-    public function scopeForOrganization($query, int $organizationId): void
-    {
-        $query->where('organization_id', $organizationId);
-    }
-
-    /**
-     * Scope to filter users by verified email
-     *
-     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
-     */
-    public function scopeVerified($query): void
-    {
-        $query->whereNotNull('email_verified_at');
-    }
-
-    /**
-     * Scope to filter users by unverified email
-     *
-     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
-     */
-    public function scopeUnverified($query): void
-    {
-        $query->whereNull('email_verified_at');
-    }
-
-    /**
      * Check if user has a specific role
      */
     public function hasRole(string $roleSlug): bool
@@ -165,7 +137,7 @@ final class User extends Authenticatable implements MustVerifyEmail
     public function hasPermission(string $permissionSlug): bool
     {
         return $this->roles()
-            ->whereHas('permissions', function ($query) use ($permissionSlug): void {
+            ->whereHas('permissions', function (Builder $query) use ($permissionSlug): void {
                 $query->where('slug', $permissionSlug);
             })
             ->exists();
@@ -179,9 +151,42 @@ final class User extends Authenticatable implements MustVerifyEmail
     public function hasAnyPermission(array $permissionSlugs): bool
     {
         return $this->roles()
-            ->whereHas('permissions', function ($query) use ($permissionSlugs): void {
+            ->whereHas('permissions', function (Builder $query) use ($permissionSlugs): void {
                 $query->whereIn('slug', $permissionSlugs);
             })
             ->exists();
+    }
+
+    /**
+     * Scope to filter users by organization
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
+     */
+    #[Scope]
+    protected function forOrganization($query, int $organizationId): void
+    {
+        $query->where('organization_id', $organizationId);
+    }
+
+    /**
+     * Scope to filter users by verified email
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
+     */
+    #[Scope]
+    protected function verified($query): void
+    {
+        $query->whereNotNull('email_verified_at');
+    }
+
+    /**
+     * Scope to filter users by unverified email
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
+     */
+    #[Scope]
+    protected function unverified($query): void
+    {
+        $query->whereNull('email_verified_at');
     }
 }

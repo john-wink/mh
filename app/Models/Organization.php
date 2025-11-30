@@ -8,6 +8,8 @@ use App\Traits\TableNameTrait;
 use App\Traits\UuidTrait;
 use Carbon\CarbonInterface;
 use Database\Factories\OrganizationFactory;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -94,9 +96,10 @@ final class Organization extends Model
     /**
      * Scope to filter active organizations
      *
-     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
+     * @param  Builder<self>  $query
      */
-    public function scopeActive($query): void
+    #[Scope]
+    protected function active($query): void
     {
         $query->where('is_active', true);
     }
@@ -104,9 +107,10 @@ final class Organization extends Model
     /**
      * Scope to filter inactive organizations
      *
-     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
+     * @param  Builder<self>  $query
      */
-    public function scopeInactive($query): void
+    #[Scope]
+    protected function inactive($query): void
     {
         $query->where('is_active', false);
     }
@@ -114,11 +118,12 @@ final class Organization extends Model
     /**
      * Scope to search organizations by name or description
      *
-     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
+     * @param  Builder<self>  $query
      */
-    public function scopeSearch($query, string $term): void
+    #[Scope]
+    protected function search($query, string $term): void
     {
-        $query->where(function ($q) use ($term): void {
+        $query->where(function (\Illuminate\Contracts\Database\Query\Builder $q) use ($term): void {
             $q->where('name', 'like', "%{$term}%")
                 ->orWhere('description', 'like', "%{$term}%");
         });

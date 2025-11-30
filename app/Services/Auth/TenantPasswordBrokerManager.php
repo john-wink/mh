@@ -4,10 +4,15 @@ declare(strict_types=1);
 
 namespace App\Services\Auth;
 
-use DateTimeImmutable;
+use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Illuminate\Auth\Passwords\DatabaseTokenRepository;
 use Illuminate\Auth\Passwords\PasswordBrokerManager;
+use Illuminate\Contracts\Auth\Factory;
 use Illuminate\Contracts\Auth\PasswordBroker;
+use Illuminate\Contracts\Config\Repository;
+use Illuminate\Database\ConnectionResolverInterface;
+use Illuminate\Hashing\HashManager;
 use InvalidArgumentException;
 
 final class TenantPasswordBrokerManager extends PasswordBrokerManager
@@ -21,9 +26,7 @@ final class TenantPasswordBrokerManager extends PasswordBrokerManager
 
         $config = $this->getConfig($name);
 
-        if (is_null($config)) {
-            throw new InvalidArgumentException("Password resetter [{$name}] is not defined.");
-        }
+        throw_if(is_null($config), new InvalidArgumentException("Password resetter [{$name}] is not defined."));
 
         return $this->brokers[$name] = $this->createTenantBroker($config);
     }
@@ -33,13 +36,13 @@ final class TenantPasswordBrokerManager extends PasswordBrokerManager
      */
     protected function createTokenRepository(array $config): DatabaseTokenRepository
     {
-        $key = $this->app['config']['app.key'];
+        $key = $this->app->make(Repository::class)->get('app.key');
 
         if (str_starts_with($key, 'base64:')) {
             $key = base64_decode(mb_substr($key, 7));
         }
 
-        return new class($this->app['db']->connection($config['connection'] ?? null), $this->app['hash'], $config['table'], $key, $config['expire'], $config['throttle'] ?? 0) extends DatabaseTokenRepository
+        return new class($this->app->make(ConnectionResolverInterface::class)->connection($config['connection'] ?? null), $this->app->make(HashManager::class), $config['table'], $key, $config['expire'], $config['throttle'] ?? 0) extends DatabaseTokenRepository
         {
             /**
              * Create a new token record with tenant support.
@@ -66,7 +69,7 @@ final class TenantPasswordBrokerManager extends PasswordBrokerManager
                     'organization_id' => $user->organization_id,
                     'email' => $email,
                     'token' => $this->hasher->make($token),
-                    'created_at' => new DateTimeImmutable,
+                    'created_at' => CarbonImmutable::now(),
                 ];
             }
 
@@ -109,7 +112,7 @@ final class TenantPasswordBrokerManager extends PasswordBrokerManager
              */
             public function deleteExpired(): void
             {
-                $expiredAt = \Carbon\Carbon::now()->subSeconds($this->expires);
+                $expiredAt = Carbon::now()->subSeconds($this->expires);
 
                 $this->getTable()->where('created_at', '<', $expiredAt)->delete();
             }
@@ -119,11 +122,11 @@ final class TenantPasswordBrokerManager extends PasswordBrokerManager
     /**
      * Create a tenant-aware password broker.
      */
-    protected function createTenantBroker(array $config): PasswordBroker
+    private function createTenantBroker(array $config): PasswordBroker
     {
         return new \Illuminate\Auth\Passwords\PasswordBroker(
             $this->createTokenRepository($config),
-            $this->app['auth']->createUserProvider($config['provider'] ?? null)
+            $this->app->make(Factory::class)->createUserProvider($config['provider'] ?? null)
         );
     }
 }

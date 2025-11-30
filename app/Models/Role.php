@@ -9,6 +9,8 @@ use App\Traits\TableNameTrait;
 use App\Traits\UuidTrait;
 use Carbon\CarbonInterface;
 use Database\Factories\RoleFactory;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -93,29 +95,6 @@ final class Role extends Model
     }
 
     /**
-     * Scope to filter roles by organization
-     *
-     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
-     */
-    public function scopeForOrganization($query, int $organizationId): void
-    {
-        $query->where('organization_id', $organizationId);
-    }
-
-    /**
-     * Scope to search roles by name or description
-     *
-     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
-     */
-    public function scopeSearch($query, string $term): void
-    {
-        $query->where(function ($q) use ($term): void {
-            $q->where('name', 'like', "%{$term}%")
-                ->orWhere('description', 'like', "%{$term}%");
-        });
-    }
-
-    /**
      * Check if role has a specific permission
      */
     public function hasPermission(string $permissionSlug): bool
@@ -139,5 +118,30 @@ final class Role extends Model
     public function revokePermission(Permission $permission): void
     {
         $this->permissions()->detach($permission);
+    }
+
+    /**
+     * Scope to filter roles by organization
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function forOrganization($query, int $organizationId): void
+    {
+        $query->where('organization_id', $organizationId);
+    }
+
+    /**
+     * Scope to search roles by name or description
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function search($query, string $term): void
+    {
+        $query->where(function (\Illuminate\Contracts\Database\Query\Builder $q) use ($term): void {
+            $q->where('name', 'like', "%{$term}%")
+                ->orWhere('description', 'like', "%{$term}%");
+        });
     }
 }

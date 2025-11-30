@@ -17,13 +17,9 @@ final class CheckRole
      */
     public function handle(Request $request, Closure $next, string ...$roles): Response
     {
-        if (! $request->user()) {
-            abort(401, 'Unauthenticated');
-        }
+        abort_unless($request->user(), 401, 'Unauthenticated');
 
-        if (! $request->user()->hasAnyRole($roles)) {
-            abort(403, 'Insufficient permissions');
-        }
+        abort_unless($request->user()->hasAnyRole($roles), 403, 'Insufficient permissions');
 
         return $next($request);
     }

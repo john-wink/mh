@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\Organizations\Tables;
 
 use Filament\Actions\BulkActionGroup;
@@ -12,7 +14,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 
-class OrganizationsTable
+final class OrganizationsTable
 {
     public static function configure(Table $table): Table
     {

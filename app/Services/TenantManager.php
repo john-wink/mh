@@ -85,7 +85,7 @@ final class TenantManager
      */
     public function hasTenant(): bool
     {
-        return $this->currentTenant !== null;
+        return $this->currentTenant instanceof Organization;
     }
 
     /**
@@ -120,7 +120,7 @@ final class TenantManager
     {
         $tenant = $this->resolveTenantById($tenantId);
 
-        if ($tenant) {
+        if ($tenant instanceof Organization) {
             $this->setCurrentTenant($tenant);
 
             return true;

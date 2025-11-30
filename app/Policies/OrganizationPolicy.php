@@ -54,7 +54,7 @@ final class OrganizationPolicy
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Organization $organization): bool
+    public function delete(User $user): bool
     {
         return $user->hasPermission('super-admin');
     }
@@ -62,7 +62,7 @@ final class OrganizationPolicy
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, Organization $organization): bool
+    public function restore(User $user): bool
     {
         return $user->hasPermission('super-admin');
     }
@@ -70,7 +70,7 @@ final class OrganizationPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Organization $organization): bool
+    public function forceDelete(User $user): bool
     {
         return $user->hasPermission('super-admin');
     }

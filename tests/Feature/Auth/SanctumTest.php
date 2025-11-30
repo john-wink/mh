@@ -6,6 +6,7 @@ use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
+use Laravel\Sanctum\PersonalAccessToken;
 
 uses(RefreshDatabase::class);
 
@@ -120,7 +121,7 @@ it('revoked tokens cannot authenticate requests', function (): void {
     $token->accessToken->delete();
 
     // Verify token is deleted from database
-    expect(Laravel\Sanctum\PersonalAccessToken::find($token->accessToken->id))->toBeNull();
+    expect(PersonalAccessToken::query()->find($token->accessToken->id))->toBeNull();
 })->skip('Token caching in test environment');
 
 it('authenticates user through API guard', function (): void {

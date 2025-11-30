@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\Organizations;
 
 use App\Filament\Resources\Organizations\Pages\CreateOrganization;
@@ -17,7 +19,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use UnitEnum;
 
-class OrganizationResource extends Resource
+final class OrganizationResource extends Resource
 {
     protected static ?string $model = Organization::class;
 

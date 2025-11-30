@@ -43,9 +43,7 @@ final class TenantResolver
         $this->tenantManager->setCurrentTenant($tenant);
 
         // If no tenant found and we're not on localhost, abort
-        if (! $tenant && ! in_array($domain, ['localhost', '127.0.0.1', '::1'])) {
-            abort(404, 'Tenant not found');
-        }
+        abort_if(! $tenant && ! in_array($domain, ['localhost', '127.0.0.1', '::1']), 404, 'Tenant not found');
 
         return $next($request);
     }

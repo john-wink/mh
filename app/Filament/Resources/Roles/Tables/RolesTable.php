@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\Roles\Tables;
 
 use Filament\Actions\BulkActionGroup;
@@ -11,7 +13,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 
-class RolesTable
+final class RolesTable
 {
     public static function configure(Table $table): Table
     {

@@ -8,6 +8,8 @@ use App\Traits\TableNameTrait;
 use App\Traits\UuidTrait;
 use Carbon\CarbonInterface;
 use Database\Factories\PermissionFactory;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -82,11 +84,12 @@ final class Permission extends Model
     /**
      * Scope to search permissions by name or description
      *
-     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
+     * @param  Builder<self>  $query
      */
-    public function scopeSearch($query, string $term): void
+    #[Scope]
+    protected function search($query, string $term): void
     {
-        $query->where(function ($q) use ($term): void {
+        $query->where(function (\Illuminate\Contracts\Database\Query\Builder $q) use ($term): void {
             $q->where('name', 'like', "%{$term}%")
                 ->orWhere('description', 'like', "%{$term}%");
         });

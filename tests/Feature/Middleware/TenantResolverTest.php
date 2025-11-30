@@ -6,7 +6,6 @@ use App\Http\Middleware\TenantResolver;
 use App\Models\Organization;
 use App\Services\TenantManager;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 uses(RefreshDatabase::class);

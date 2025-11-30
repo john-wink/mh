@@ -17,13 +17,9 @@ final class CheckPermission
      */
     public function handle(Request $request, Closure $next, string ...$permissions): Response
     {
-        if (! $request->user()) {
-            abort(401, 'Unauthenticated');
-        }
+        abort_unless($request->user(), 401, 'Unauthenticated');
 
-        if (! $request->user()->hasAnyPermission($permissions)) {
-            abort(403, 'Insufficient permissions');
-        }
+        abort_unless($request->user()->hasAnyPermission($permissions), 403, 'Insufficient permissions');
 
         return $next($request);
     }

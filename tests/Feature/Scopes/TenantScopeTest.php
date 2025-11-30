@@ -121,6 +121,6 @@ it('maintains tenant isolation across different models', function (): void {
     $this->tenantManager->setCurrentTenant($this->tenant1);
 
     // Both models should be scoped to tenant1
-    expect(User::count())->toBe(1)
-        ->and(Role::count())->toBe(1);
+    expect(User::query()->count())->toBe(1)
+        ->and(Role::query()->count())->toBe(1);
 });
