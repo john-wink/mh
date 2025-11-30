@@ -2,31 +2,67 @@
   {
     "id": "TASK-001",
     "status": "pending",
-    "title": "Setup Laravel project structure",
-    "description": "Initialize Laravel with Filament, setup database, and configure basic settings",
-    "storyPoints": 5,
+    "title": "Database Schema Design and Migration Setup",
+    "description": "Create database migrations for multi-tenant architecture including organizations table, users table with tenant relationships, roles and permissions tables. Set up foreign key constraints and indexes for optimal performance. Include soft deletes and timestamps.",
+    "storyPoints": 3,
     "dependencies": [],
-    "team": 0,
-    "sprint": 1
+    "team": 1,
+    "sprint": 1,
+    "epicId": "EPIC-001"
   },
   {
     "id": "TASK-002",
     "status": "pending",
-    "title": "Implement GPS tracking",
-    "description": "Add real-time GPS tracking for manhunt game",
-    "storyPoints": 8,
+    "title": "Core Models and Relationships Implementation",
+    "description": "Implement Laravel Eloquent models for Organization, User, Role, and Permission with proper relationships, scopes for tenant isolation, and model factories for testing. Include validation rules and attribute casting.",
+    "storyPoints": 3,
     "dependencies": [],
     "team": 1,
-    "sprint": 1
+    "sprint": 1,
+    "epicId": "EPIC-001"
   },
   {
     "id": "TASK-003",
     "status": "pending",
-    "title": "Create authentication system",
-    "description": "User registration, login, and profile management",
+    "title": "Multi-Tenant Middleware and Service Layer",
+    "description": "Develop tenant resolution middleware to identify current tenant from subdomain/domain, implement tenant scoping service to automatically filter queries by tenant, and create tenant switching functionality for admin users.",
     "storyPoints": 5,
     "dependencies": [],
-    "team": 0,
-    "sprint": 1
+    "team": 1,
+    "sprint": 1,
+    "epicId": "EPIC-001"
+  },
+  {
+    "id": "TASK-004",
+    "status": "pending",
+    "title": "Authentication System with Role-Based Access Control",
+    "description": "Implement Laravel authentication with custom guards for multi-tenancy, role-based authorization using policies and gates, password reset functionality scoped to tenants, and API token authentication for future API access.",
+    "storyPoints": 5,
+    "dependencies": [],
+    "team": 1,
+    "sprint": 1,
+    "epicId": "EPIC-001"
+  },
+  {
+    "id": "TASK-005",
+    "status": "pending",
+    "title": "Filament Admin Panel Integration",
+    "description": "Set up Filament admin panel with tenant-aware resources for managing organizations, users, and roles. Create custom login page, dashboard with tenant-specific data, and navigation menu with proper permission checks.",
+    "storyPoints": 3,
+    "dependencies": [],
+    "team": 1,
+    "sprint": 1,
+    "epicId": "EPIC-001"
+  },
+  {
+    "id": "TASK-006",
+    "status": "pending",
+    "title": "Comprehensive Testing Suite",
+    "description": "Write unit tests for models and services, feature tests for authentication flows and tenant isolation, create test database seeders for different tenant scenarios, and implement automated testing for role-based access control.",
+    "storyPoints": 2,
+    "dependencies": [],
+    "team": 1,
+    "sprint": 1,
+    "epicId": "EPIC-001"
   }
 ]

@@ -3,8 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manhunt Agent Orchestrator - Dashboard</title>
+    <title>BountyOps Agent Orchestrator - Dashboard</title>
     <style>
+        :root {
+            --bg-gradient-start: #667eea;
+            --bg-gradient-end: #764ba2;
+            --card-bg: white;
+            --card-shadow: rgba(0,0,0,0.1);
+            --text-primary: #333;
+            --text-secondary: #666;
+            --text-tertiary: #999;
+            --border-color: #f0f0f0;
+            --input-bg: #f8f9fa;
+            --header-bg: white;
+        }
+
+        body.dark-mode {
+            --bg-gradient-start: #1a1a2e;
+            --bg-gradient-end: #16213e;
+            --card-bg: #0f3460;
+            --card-shadow: rgba(0,0,0,0.4);
+            --text-primary: #e8e8e8;
+            --text-secondary: #b8b8b8;
+            --text-tertiary: #888;
+            --border-color: #1e4976;
+            --input-bg: #0a2647;
+            --header-bg: #0f3460;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -13,10 +39,11 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #333;
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            color: var(--text-primary);
             min-height: 100vh;
             padding: 20px;
+            transition: background 0.3s ease, color 0.3s ease;
         }
 
         .container {
@@ -25,11 +52,15 @@
         }
 
         header {
-            background: white;
+            background: var(--header-bg);
             border-radius: 12px;
             padding: 30px;
             margin-bottom: 30px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 40px var(--card-shadow);
+            transition: background 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         h1 {
@@ -39,8 +70,27 @@
         }
 
         .subtitle {
-            color: #666;
+            color: var(--text-secondary);
             font-size: 1.1em;
+        }
+
+        .dark-mode-toggle {
+            background: var(--input-bg);
+            border: 2px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.2em;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dark-mode-toggle:hover {
+            transform: scale(1.05);
+            border-color: #667eea;
         }
 
         .stats-grid {
@@ -51,11 +101,11 @@
         }
 
         .stat-card {
-            background: white;
+            background: var(--card-bg);
             border-radius: 12px;
             padding: 25px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease;
+            box-shadow: 0 10px 40px var(--card-shadow);
+            transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
         }
 
         .stat-card:hover {
@@ -64,7 +114,7 @@
 
         .stat-label {
             font-size: 0.9em;
-            color: #666;
+            color: var(--text-secondary);
             margin-bottom: 10px;
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -94,10 +144,11 @@
         }
 
         .team-card {
-            background: white;
+            background: var(--card-bg);
             border-radius: 12px;
             padding: 25px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 40px var(--card-shadow);
+            transition: background 0.3s ease, box-shadow 0.3s ease;
         }
 
         .team-header {
@@ -106,7 +157,7 @@
             align-items: center;
             margin-bottom: 20px;
             padding-bottom: 15px;
-            border-bottom: 2px solid #f0f0f0;
+            border-bottom: 2px solid var(--border-color);
         }
 
         .team-name {
@@ -132,14 +183,15 @@
         }
 
         .team-stat {
-            background: #f8f9fa;
+            background: var(--input-bg);
             padding: 15px;
             border-radius: 8px;
+            transition: background 0.3s ease;
         }
 
         .team-stat-label {
             font-size: 0.85em;
-            color: #666;
+            color: var(--text-secondary);
             margin-bottom: 5px;
         }
 
@@ -154,15 +206,23 @@
         }
 
         .agent-item {
-            background: #f8f9fa;
+            background: var(--input-bg);
             padding: 15px;
             border-radius: 8px;
             margin-bottom: 10px;
             border-left: 4px solid #667eea;
+            transition: background 0.3s ease;
         }
 
         .agent-item.active {
             border-left-color: #48bb78;
+        }
+
+        body.dark-mode .agent-item.active {
+            background: rgba(72, 187, 120, 0.15);
+        }
+
+        body:not(.dark-mode) .agent-item.active {
             background: #f0fff4;
         }
 
@@ -172,13 +232,13 @@
 
         .agent-name {
             font-weight: bold;
-            color: #333;
+            color: var(--text-primary);
             margin-bottom: 5px;
         }
 
         .agent-role {
             font-size: 0.85em;
-            color: #666;
+            color: var(--text-secondary);
             margin-bottom: 8px;
         }
 
@@ -186,7 +246,7 @@
             display: flex;
             justify-content: space-between;
             font-size: 0.85em;
-            color: #666;
+            color: var(--text-secondary);
         }
 
         .task-list {
@@ -196,7 +256,7 @@
 
         .task-item {
             font-size: 0.85em;
-            color: #555;
+            color: var(--text-secondary);
             padding: 5px 0;
             border-left: 2px solid #667eea;
             padding-left: 10px;
@@ -204,11 +264,12 @@
         }
 
         .config-section {
-            background: white;
+            background: var(--card-bg);
             border-radius: 12px;
             padding: 25px;
             margin-bottom: 30px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 40px var(--card-shadow);
+            transition: background 0.3s ease, box-shadow 0.3s ease;
         }
 
         .config-grid {
@@ -219,13 +280,14 @@
 
         .config-item {
             padding: 15px;
-            background: #f8f9fa;
+            background: var(--input-bg);
             border-radius: 8px;
+            transition: background 0.3s ease;
         }
 
         .config-label {
             font-size: 0.85em;
-            color: #666;
+            color: var(--text-secondary);
             margin-bottom: 5px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -273,7 +335,7 @@
         .empty-state {
             text-align: center;
             padding: 40px;
-            color: #666;
+            color: var(--text-secondary);
         }
 
         .progress-bar {
@@ -298,20 +360,35 @@
         }
 
         .cost-card {
-            background: #f8f9fa;
+            background: var(--input-bg);
             padding: 20px;
             border-radius: 8px;
             border-left: 4px solid #667eea;
+            transition: background 0.3s ease;
         }
 
         .cost-card.warning {
             border-left-color: #f6ad55;
+        }
+
+        body:not(.dark-mode) .cost-card.warning {
             background: #fffaf0;
+        }
+
+        body.dark-mode .cost-card.warning {
+            background: rgba(246, 173, 85, 0.15);
         }
 
         .cost-card.danger {
             border-left-color: #fc8181;
+        }
+
+        body:not(.dark-mode) .cost-card.danger {
             background: #fff5f5;
+        }
+
+        body.dark-mode .cost-card.danger {
+            background: rgba(252, 129, 129, 0.15);
         }
 
         .cost-header {
@@ -324,7 +401,7 @@
         .cost-period {
             font-size: 0.9em;
             font-weight: bold;
-            color: #333;
+            color: var(--text-primary);
             text-transform: uppercase;
             letter-spacing: 1px;
         }
@@ -345,7 +422,7 @@
 
         .cost-details {
             font-size: 0.85em;
-            color: #666;
+            color: var(--text-secondary);
             margin-top: 5px;
         }
 
@@ -383,19 +460,19 @@
         }
 
         .cost-info-label {
-            color: #666;
+            color: var(--text-secondary);
             margin-bottom: 3px;
         }
 
         .cost-info-value {
             font-weight: bold;
-            color: #333;
+            color: var(--text-primary);
         }
 
         .cost-disabled {
             text-align: center;
             padding: 40px;
-            color: #999;
+            color: var(--text-tertiary);
             font-style: italic;
         }
 
@@ -409,13 +486,165 @@
             font-weight: bold;
             margin-left: 10px;
         }
+
+        /* Custom Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+        }
+
+        .modal {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px;
+            min-width: 400px;
+            max-width: 600px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.show .modal {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: var(--text-primary);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-body {
+            color: var(--text-secondary);
+            font-size: 1em;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .modal-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .modal-textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+            margin-bottom: 20px;
+            min-height: 100px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .modal-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .modal-button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-button-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .modal-button-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .modal-button-success {
+            background: #48bb78;
+            color: white;
+        }
+
+        .modal-button-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(72, 187, 120, 0.4);
+        }
+
+        .modal-button-danger {
+            background: #fc8181;
+            color: white;
+        }
+
+        .modal-button-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(252, 129, 129, 0.4);
+        }
+
+        .modal-button-secondary {
+            background: var(--input-bg);
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+        }
+
+        .modal-button-secondary:hover {
+            background: var(--border-color);
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>🤖 Manhunt Agent Orchestrator</h1>
-            <p class="subtitle">Real-time Multi-Agent Development Dashboard</p>
+            <div>
+                <h1>🎯 BountyOps Agent Orchestrator</h1>
+                <p class="subtitle">Real-time Multi-Agent Development Dashboard</p>
+            </div>
+            <button class="dark-mode-toggle" onclick="toggleDarkMode()" title="Toggle Dark Mode">
+                <span id="dark-mode-icon">🌙</span>
+                <span id="dark-mode-text">Dark Mode</span>
+            </button>
         </header>
 
         <div id="loading" class="loading">
@@ -438,10 +667,32 @@
                 <div class="config-grid" id="config-grid"></div>
             </div>
 
+            <!-- Planning Agent Section -->
+            <div class="config-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 class="section-title" style="color: #333; margin: 0;">🧠 Planning Assistant</h2>
+                    <button onclick="getSuggestions()" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 15px rgba(102,126,234,0.4);">✨ Get AI Suggestions</button>
+                </div>
+                <div id="planning-section">
+                    <div style="text-align: center; padding: 40px; color: #999; font-style: italic;">
+                        Click "Get AI Suggestions" to analyze your project and get intelligent recommendations for next tasks and epics.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Epic Management Section -->
+            <div class="config-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 class="section-title" style="color: #333; margin: 0;">🎯 Epics</h2>
+                    <button onclick="showCreateEpicModal()" style="background: #764ba2; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold;">+ Create Epic</button>
+                </div>
+                <div id="epic-management"></div>
+            </div>
+
             <!-- Task Management Section -->
             <div class="config-section">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h2 class="section-title" style="color: #333; margin: 0;">📋 Task Management</h2>
+                    <h2 class="section-title" style="color: #333; margin: 0;">📋 Tasks</h2>
                     <div style="display: flex; gap: 10px;">
                         <button onclick="autoAssignTasks()" style="background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold;">Auto-Assign Tasks</button>
                         <button onclick="showCreateTaskModal()" style="background: #48bb78; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold;">+ Create Task</button>

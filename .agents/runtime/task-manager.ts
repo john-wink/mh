@@ -1,17 +1,20 @@
 import { readFile, writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
-import type { Task } from '../lib/agent.js';
+import type { Task, Epic } from '../lib/agent.js';
 
 export class TaskManager {
   private tasks: Map<string, Task> = new Map();
+  private epics: Map<string, Epic> = new Map();
   private tasksDirectory: string;
   private nextTaskId: number = 1;
+  private nextEpicId: number = 1;
 
   constructor(tasksDirectory: string) {
     this.tasksDirectory = tasksDirectory;
     this.ensureTasksDirectory();
     this.loadTasks();
+    this.loadEpics();
   }
 
   private async ensureTasksDirectory(): Promise<void> {
@@ -192,5 +195,123 @@ export class TaskManager {
       created.push(task);
     }
     return created;
+  }
+
+  // Epic Management Methods
+  private async loadEpics(): Promise<void> {
+    try {
+      const epicsFile = join(this.tasksDirectory, 'epics.json');
+      if (existsSync(epicsFile)) {
+        const data = await readFile(epicsFile, 'utf-8');
+        const epicsArray = JSON.parse(data);
+        for (const epic of epicsArray) {
+          if (epic.createdAt) epic.createdAt = new Date(epic.createdAt);
+          if (epic.startedAt) epic.startedAt = new Date(epic.startedAt);
+          if (epic.completedAt) epic.completedAt = new Date(epic.completedAt);
+          this.epics.set(epic.id, epic);
+        }
+        const epicNumbers = Array.from(this.epics.keys())
+          .map(id => parseInt(id.replace('EPIC-', '')))
+          .filter(n => !isNaN(n));
+        if (epicNumbers.length > 0) {
+          this.nextEpicId = Math.max(...epicNumbers) + 1;
+        }
+        console.log(`✓ Loaded ${this.epics.size} epics`);
+      }
+    } catch (error) {
+      console.log('⚠️  Could not load epics, starting fresh');
+      this.epics = new Map();
+    }
+  }
+
+  private async saveEpics(): Promise<void> {
+    const epicsFile = join(this.tasksDirectory, 'epics.json');
+    const epicsArray = Array.from(this.epics.values());
+    await writeFile(epicsFile, JSON.stringify(epicsArray, null, 2), 'utf-8');
+  }
+
+  async createEpic(epicData: Omit<Epic, 'id' | 'status' | 'createdAt' | 'taskIds'>): Promise<Epic> {
+    const epic: Epic = {
+      id: `EPIC-${String(this.nextEpicId).padStart(3, '0')}`,
+      status: 'pending',
+      createdAt: new Date(),
+      taskIds: [],
+      ...epicData,
+    };
+    this.nextEpicId++;
+    this.epics.set(epic.id, epic);
+    await this.saveEpics();
+    console.log(`✓ Created epic ${epic.id}: ${epic.title}`);
+    return epic;
+  }
+
+  getEpic(epicId: string): Epic | undefined {
+    return this.epics.get(epicId);
+  }
+
+  getEpics(filter?: any): Epic[] {
+    let epics = Array.from(this.epics.values());
+    if (filter) {
+      if (filter.status) epics = epics.filter(e => e.status === filter.status);
+      if (filter.team !== undefined) epics = epics.filter(e => e.team === filter.team);
+      if (filter.sprint !== undefined) epics = epics.filter(e => e.sprint === filter.sprint);
+    }
+    return epics;
+  }
+
+  async updateEpic(epicId: string, updates: Partial<Epic>): Promise<Epic | null> {
+    const epic = this.epics.get(epicId);
+    if (!epic) return null;
+    Object.assign(epic, updates);
+    await this.saveEpics();
+    return epic;
+  }
+
+  async deleteEpic(epicId: string): Promise<boolean> {
+    const deleted = this.epics.delete(epicId);
+    if (deleted) await this.saveEpics();
+    return deleted;
+  }
+
+  async startEpic(epicId: string): Promise<Epic | null> {
+    const epic = this.epics.get(epicId);
+    if (!epic) return null;
+    epic.status = 'in_progress';
+    epic.startedAt = new Date();
+    await this.saveEpics();
+    return epic;
+  }
+
+  async completeEpic(epicId: string): Promise<Epic | null> {
+    const epic = this.epics.get(epicId);
+    if (!epic) return null;
+    epic.status = 'completed';
+    epic.completedAt = new Date();
+    await this.saveEpics();
+    return epic;
+  }
+
+  async addTaskToEpic(epicId: string, taskId: string): Promise<void> {
+    const epic = this.epics.get(epicId);
+    if (!epic) throw new Error(`Epic ${epicId} not found`);
+    if (!epic.taskIds.includes(taskId)) {
+      epic.taskIds.push(taskId);
+      await this.saveEpics();
+    }
+  }
+
+  getEpicProgress(epicId: string): { total: number; completed: number; inProgress: number; pending: number; blocked: number } {
+    const epic = this.epics.get(epicId);
+    if (!epic) return { total: 0, completed: 0, inProgress: 0, pending: 0, blocked: 0 };
+
+    const tasks = epic.taskIds.map(id => this.tasks.get(id)).filter(t => t !== undefined) as Task[];
+
+    return {
+      total: tasks.length,
+      completed: tasks.filter(t => t.status === 'completed').length,
+      inProgress: tasks.filter(t => t.status === 'in_progress').length,
+      pending: tasks.filter(t => t.status === 'pending').length,
+      blocked: tasks.filter(t => t.status === 'blocked').length,
+    };
   }
 }

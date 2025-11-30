@@ -1,4 +1,4 @@
-# Manhunt SaaS Platform
+# BountyOps SaaS Platform
 
 > Eine umfassende, cloudbasierte Lösung zur Verwaltung und Durchführung von Live-Action-Verfolgungsjagd-Spielen mit GPS-Tracking, Echtzeit-Kommunikation und Production-Features.
 
@@ -21,7 +21,7 @@
 
 ## Projektübersicht
 
-**Manhunt SaaS Platform** ermöglicht es Organisationen, komplexe Manhunt-Events durchzuführen, bei denen Spieler (Runner) für eine definierte Zeit (typisch 96 Stunden) einer professionellen Jäger-Taskforce (Hunter) zu entkommen versuchen.
+**BountyOps SaaS Platform** ermöglicht es Organisationen, komplexe BountyOps-Events durchzuführen, bei denen Spieler (Runner) für eine definierte Zeit (typisch 96 Stunden) einer professionellen Jäger-Taskforce (Hunter) zu entkommen versuchen.
 
 ### Kernkonzept
 
@@ -47,7 +47,7 @@ Die Spielleitung überwacht und steuert das Spiel über eine zentrale Kommandoze
 ## Vision & Ziele
 
 ### Vision
-Eine universelle Plattform zu schaffen, die es jedem ermöglicht, professionelle Manhunt-Events durchzuführen - von kleinen Community-Spielen bis hin zu großen, produzierten YouTube-Serien.
+Eine universelle Plattform zu schaffen, die es jedem ermöglicht, professionelle BountyOps-Events durchzuführen - von kleinen Community-Spielen bis hin zu großen, produzierten YouTube-Serien.
 
 ### Hauptziele
 
@@ -74,7 +74,7 @@ Eine universelle Plattform zu schaffen, die es jedem ermöglicht, professionelle
         │                  │                  │
 ┌───────▼────────┐  ┌──────▼───────┐   ┌──────▼───────┐
 │ Organisation A │  │ Organisation │   │ Organisation │
-│ (Manhunt Media)│  │  B (Gaming)  │   │  C (Events)  │
+│(BountyOps Media)│ │  B (Gaming)  │   │  C (Events)  │
 └───────┬────────┘  └──────┬───────┘   └──────┬───────┘
         │                  │                  │
     ┌───┴───┌───────┐  ┌───┴───┐───────┐  ┌───┴───┐
@@ -1446,7 +1446,7 @@ POST /api/v1/games/{game_id}/export
 
 **PDF-Inhalt**:
 ```
-EINWILLIGUNGSERKLÄRUNG - MANHUNT EVENT
+EINWILLIGUNGSERKLÄRUNG - BOUNTYOPS EVENT
 
 Ich, [Name], willige ein, dass folgende Daten erhoben werden:
 - GPS-Positionsdaten (Echtzeit-Tracking während des Events)
@@ -1454,7 +1454,7 @@ Ich, [Name], willige ein, dass folgende Daten erhoben werden:
 - Kommunikationsdaten (Chat-Nachrichten)
 - Video-/Audio-Material (Body-Cam-Aufnahmen)
 
-Zweck: Durchführung des Manhunt-Events
+Zweck: Durchführung des BountyOps-Events
 Speicherdauer: Unbegrenzt (bis auf Widerruf)
 Weitergabe: An Organisatoren, Produktionsteam
 
@@ -1897,7 +1897,7 @@ Echo.private(`chat.${chatRoomId}`)
 
 ## Zusammenfassung
 
-Die **Manhunt SaaS Platform** ist eine umfassende Lösung für die Planung, Durchführung und Nachbereitung von Live-Action-Verfolgungsjagd-Events. Sie bietet:
+Die **BountyOps SaaS Platform** ist eine umfassende Lösung für die Planung, Durchführung und Nachbereitung von Live-Action-Verfolgungsjagd-Events. Sie bietet:
 
 1. **Vollständige Spielverwaltung** von Setup bis Post-Game
 2. **Echtzeit-Tracking** mit Multi-Tracker-Support und GPS-Fusion
@@ -1913,4 +1913,4 @@ Die Plattform ist **kostenlos** und als Open-Source-Projekt konzipiert, um die C
 
 **Roadmap**: 6 Phasen über ~12 Monate von MVP bis Production-Ready
 
-**Vision**: Die universelle Plattform für Manhunt-Events weltweit
+**Vision**: Die universelle Plattform für BountyOps-Events weltweit

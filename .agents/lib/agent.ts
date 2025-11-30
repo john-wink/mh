@@ -2,6 +2,20 @@ import Anthropic from '@anthropic-ai/sdk';
 import type { Agent as AgentConfig } from './config.js';
 import { GitManager } from './git-manager.js';
 
+export interface Epic {
+  id: string;
+  title: string;
+  description: string;
+  estimatedStoryPoints: number;
+  team: number;
+  sprint: number;
+  status: 'pending' | 'in_progress' | 'completed';
+  createdAt: Date;
+  startedAt?: Date;
+  completedAt?: Date;
+  taskIds: string[]; // IDs of tasks created from this epic
+}
+
 export interface Task {
   id: string;
   title: string;
@@ -15,6 +29,8 @@ export interface Task {
   startedAt?: Date;
   completedAt?: Date;
   blockedReason?: string;
+  epicId?: string; // Reference to parent epic
+  parentTaskId?: string; // Reference to parent task (for subtasks)
 }
 
 export class Agent {
