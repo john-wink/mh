@@ -633,6 +633,7 @@ function renderTasks(tasks, stats) {
                 <div style="display: flex; gap: 8px;">
                     ${task.status === 'pending' ? `<button onclick="assignTask('${task.id}')" style="background: #667eea; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.85em;">Assign</button>` : ''}
                     ${task.status === 'in_progress' ? `<button onclick="executeTask('${task.id}')" style="background: #48bb78; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.85em;">Execute</button>` : ''}
+                    ${task.status === 'blocked' ? `<button onclick="unblockTask('${task.id}')" style="background: #f6ad55; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.85em;">Unblock</button>` : ''}
                     <button onclick="deleteTask('${task.id}')" style="background: #fc8181; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.85em;">Delete</button>
                 </div>
             </div>
@@ -670,6 +671,22 @@ async function executeTask(taskId) {
         }
     } catch (error) {
         await showAlert(`Failed to execute task: ${error.message}`, 'Error', '❌');
+    }
+}
+
+async function unblockTask(taskId) {
+    if (!await showConfirm('Unblock this task? It will be reset to pending status.', 'Confirm Unblock', '🔓')) return;
+    try {
+        const res = await fetch(`/api/tasks/${taskId}/unblock`, { method: 'POST' });
+        if (res.ok) {
+            await showAlert('Task unblocked and reset to pending', 'Success', '✅');
+            fetchTasks();
+        } else {
+            const data = await res.json();
+            await showAlert(`Error: ${data.error}`, 'Error', '❌');
+        }
+    } catch (error) {
+        await showAlert(`Failed to unblock task: ${error.message}`, 'Error', '❌');
     }
 }
 

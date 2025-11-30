@@ -15,13 +15,13 @@ export class GitWorktreeManager {
   constructor(projectRoot: string) {
     this.projectRoot = projectRoot;
     this.worktreeBaseDir = join(projectRoot, '.worktrees');
-    this.initialize();
   }
 
   /**
    * Initialize the worktree manager and clean up stale registrations
+   * Must be called explicitly after construction
    */
-  private async initialize(): Promise<void> {
+  async initialize(): Promise<void> {
     try {
       // Prune stale worktree registrations
       await execAsync('git worktree prune', {

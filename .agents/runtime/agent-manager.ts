@@ -42,6 +42,12 @@ export class AgentManager {
 
   async initialize(): Promise<void> {
     if (this.initialized) return;
+
+    // Initialize worktree manager first (prune stale registrations)
+    if (this.worktreeManager) {
+      await this.worktreeManager.initialize();
+    }
+
     await this.initializeAgents();
     this.initialized = true;
   }
@@ -217,17 +223,47 @@ export class AgentManager {
     // Execute task using Claude Code (foreground, user can see & interact)
     const result = await this.claudeCodeExecutor.executeTask(task, agent);
 
-    if (result.success) {
-      // Task completion is handled by the agent via MCP complete_task tool
-      console.log(chalk.green(`✓ Task ${taskId} completed successfully`));
-    } else {
-      await this.taskManager.blockTask(taskId, result.error || 'Claude Code session failed');
-    }
+    // After Claude Code session ends, check if task was completed
+    const updatedTask = this.taskManager.getTask(taskId);
 
-    return {
-      success: result.success,
-      output: result.error || 'Task execution completed',
-    };
+    if (updatedTask?.status === 'completed') {
+      // Task was completed by agent via MCP complete_task tool
+      console.log(chalk.green(`✓ Task ${taskId} completed by agent`));
+
+      // Merge branch to main and cleanup worktree
+      if (this.worktreeManager) {
+        try {
+          console.log(chalk.blue(`🔀 Merging ${agent.name}'s branch to main...`));
+          await this.worktreeManager.mergeBranch(agent.id);
+          console.log(chalk.green(`✓ Branch merged to main`));
+
+          console.log(chalk.blue(`🧹 Cleaning up worktree...`));
+          await this.worktreeManager.removeWorktree(agent.id);
+          console.log(chalk.green(`✓ Worktree removed`));
+        } catch (error) {
+          console.error(chalk.red(`⚠️  Failed to merge/cleanup: ${error instanceof Error ? error.message : 'Unknown error'}`));
+        }
+      }
+
+      return {
+        success: true,
+        output: 'Task completed successfully',
+      };
+    } else if (!result.success) {
+      // Claude Code session failed
+      await this.taskManager.blockTask(taskId, result.error || 'Claude Code session failed');
+      return {
+        success: false,
+        output: result.error || 'Task execution failed',
+      };
+    } else {
+      // Session completed but task not marked as done
+      console.log(chalk.yellow(`⚠️  Claude Code session ended but task ${taskId} not completed`));
+      return {
+        success: false,
+        output: 'Session ended but task not completed. Agent may need more time or encountered issues.',
+      };
+    }
   }
 
   async autoAssignTasks(): Promise<{ assigned: number; failed: number }> {

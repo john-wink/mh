@@ -238,6 +238,17 @@ app.post('/api/tasks/:id/execute', async (req, res) => {
   }
 });
 
+app.post('/api/tasks/:id/unblock', async (req, res) => {
+  try {
+    const taskManager = agentManager.getTaskManager();
+    const task = await taskManager.unblockTask(req.params.id);
+    if (!task) return res.status(404).json({ error: 'Task not found' });
+    res.json({ task });
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
+  }
+});
+
 app.delete('/api/tasks/:id', async (req, res) => {
   try {
     const taskManager = agentManager.getTaskManager();
