@@ -57,7 +57,7 @@
   },
   {
     "id": "TASK-005",
-    "status": "in_progress",
+    "status": "completed",
     "title": "Filament Admin Panel Integration",
     "description": "Set up Filament admin panel with tenant-aware resources for managing organizations, users, and roles. Create custom login page, dashboard with tenant-specific data, and navigation menu with proper permission checks.",
     "storyPoints": 3,
@@ -66,7 +66,8 @@
     "sprint": 1,
     "epicId": "EPIC-001",
     "assignedTo": "team-1-lead",
-    "startedAt": "2025-11-30T21:32:01.027Z"
+    "startedAt": "2025-11-30T21:32:01.028Z",
+    "completedAt": "2025-11-30T21:42:03.624Z"
   },
   {
     "id": "TASK-006",
