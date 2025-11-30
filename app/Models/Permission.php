@@ -28,6 +28,34 @@ final class Permission extends Model
     use HasFactory, SoftDeletes, TableNameTrait, UuidTrait;
 
     /**
+     * Get validation rules for creating a permission
+     *
+     * @return array<string, mixed>
+     */
+    public static function createRules(): array
+    {
+        return [
+            'name' => ['required', 'string', 'max:255'],
+            'slug' => ['required', 'string', 'max:255', 'unique:permissions,slug', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'],
+            'description' => ['nullable', 'string', 'max:1000'],
+        ];
+    }
+
+    /**
+     * Get validation rules for updating a permission
+     *
+     * @return array<string, mixed>
+     */
+    public static function updateRules(int $permissionId): array
+    {
+        return [
+            'name' => ['sometimes', 'string', 'max:255'],
+            'slug' => ['sometimes', 'string', 'max:255', 'unique:permissions,slug,'.$permissionId, 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'],
+            'description' => ['nullable', 'string', 'max:1000'],
+        ];
+    }
+
+    /**
      * @return array<string, string>
      */
     public function casts(): array
@@ -49,5 +77,18 @@ final class Permission extends Model
     public function roles(): BelongsToMany
     {
         return $this->belongsToMany(Role::class);
+    }
+
+    /**
+     * Scope to search permissions by name or description
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
+     */
+    public function scopeSearch($query, string $term): void
+    {
+        $query->where(function ($q) use ($term): void {
+            $q->where('name', 'like', "%{$term}%")
+                ->orWhere('description', 'like', "%{$term}%");
+        });
     }
 }

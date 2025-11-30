@@ -42,6 +42,36 @@ final class User extends Authenticatable implements MustVerifyEmail
     ];
 
     /**
+     * Get validation rules for creating a user
+     *
+     * @return array<string, mixed>
+     */
+    public static function createRules(): array
+    {
+        return [
+            'organization_id' => ['required', 'integer', 'exists:organizations,id'],
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ];
+    }
+
+    /**
+     * Get validation rules for updating a user
+     *
+     * @return array<string, mixed>
+     */
+    public static function updateRules(int $userId): array
+    {
+        return [
+            'organization_id' => ['sometimes', 'integer', 'exists:organizations,id'],
+            'name' => ['sometimes', 'string', 'max:255'],
+            'email' => ['sometimes', 'string', 'email', 'max:255', 'unique:users,email,'.$userId],
+            'password' => ['sometimes', 'string', 'min:8', 'confirmed'],
+        ];
+    }
+
+    /**
      * @return array<string, string>
      */
     public function casts(): array
@@ -74,5 +104,91 @@ final class User extends Authenticatable implements MustVerifyEmail
     public function roles(): BelongsToMany
     {
         return $this->belongsToMany(Role::class);
+    }
+
+    /**
+     * Scope to filter users by organization
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
+     */
+    public function scopeForOrganization($query, int $organizationId): void
+    {
+        $query->where('organization_id', $organizationId);
+    }
+
+    /**
+     * Scope to filter users by verified email
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
+     */
+    public function scopeVerified($query): void
+    {
+        $query->whereNotNull('email_verified_at');
+    }
+
+    /**
+     * Scope to filter users by unverified email
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
+     */
+    public function scopeUnverified($query): void
+    {
+        $query->whereNull('email_verified_at');
+    }
+
+    /**
+     * Check if user has a specific role
+     */
+    public function hasRole(string $roleSlug): bool
+    {
+        return $this->roles()->where('slug', $roleSlug)->exists();
+    }
+
+    /**
+     * Check if user has any of the given roles
+     *
+     * @param  array<string>  $roleSlugs
+     */
+    public function hasAnyRole(array $roleSlugs): bool
+    {
+        return $this->roles()->whereIn('slug', $roleSlugs)->exists();
+    }
+
+    /**
+     * Check if user has all of the given roles
+     *
+     * @param  array<string>  $roleSlugs
+     */
+    public function hasAllRoles(array $roleSlugs): bool
+    {
+        $userRoles = $this->roles()->pluck('slug')->toArray();
+
+        return count(array_intersect($roleSlugs, $userRoles)) === count($roleSlugs);
+    }
+
+    /**
+     * Check if user has a specific permission
+     */
+    public function hasPermission(string $permissionSlug): bool
+    {
+        return $this->roles()
+            ->whereHas('permissions', function ($query) use ($permissionSlug): void {
+                $query->where('slug', $permissionSlug);
+            })
+            ->exists();
+    }
+
+    /**
+     * Check if user has any of the given permissions
+     *
+     * @param  array<string>  $permissionSlugs
+     */
+    public function hasAnyPermission(array $permissionSlugs): bool
+    {
+        return $this->roles()
+            ->whereHas('permissions', function ($query) use ($permissionSlugs): void {
+                $query->whereIn('slug', $permissionSlugs);
+            })
+            ->exists();
     }
 }

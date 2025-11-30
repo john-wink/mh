@@ -29,6 +29,36 @@ final class Organization extends Model
     use HasFactory, SoftDeletes, TableNameTrait,UuidTrait;
 
     /**
+     * Get validation rules for creating an organization
+     *
+     * @return array<string, mixed>
+     */
+    public static function createRules(): array
+    {
+        return [
+            'name' => ['required', 'string', 'max:255'],
+            'slug' => ['required', 'string', 'max:255', 'unique:organizations,slug', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'],
+            'description' => ['nullable', 'string', 'max:1000'],
+            'is_active' => ['boolean'],
+        ];
+    }
+
+    /**
+     * Get validation rules for updating an organization
+     *
+     * @return array<string, mixed>
+     */
+    public static function updateRules(int $organizationId): array
+    {
+        return [
+            'name' => ['sometimes', 'string', 'max:255'],
+            'slug' => ['sometimes', 'string', 'max:255', 'unique:organizations,slug,'.$organizationId, 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'],
+            'description' => ['nullable', 'string', 'max:1000'],
+            'is_active' => ['sometimes', 'boolean'],
+        ];
+    }
+
+    /**
      * @return array<string, string>
      */
     public function casts(): array
@@ -59,5 +89,38 @@ final class Organization extends Model
     public function roles(): HasMany
     {
         return $this->hasMany(Role::class);
+    }
+
+    /**
+     * Scope to filter active organizations
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
+     */
+    public function scopeActive($query): void
+    {
+        $query->where('is_active', true);
+    }
+
+    /**
+     * Scope to filter inactive organizations
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
+     */
+    public function scopeInactive($query): void
+    {
+        $query->where('is_active', false);
+    }
+
+    /**
+     * Scope to search organizations by name or description
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
+     */
+    public function scopeSearch($query, string $term): void
+    {
+        $query->where(function ($q) use ($term): void {
+            $q->where('name', 'like', "%{$term}%")
+                ->orWhere('description', 'like', "%{$term}%");
+        });
     }
 }

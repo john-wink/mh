@@ -46,3 +46,43 @@ it('enforces unique slug globally', function (): void {
         'slug' => 'create-users',
     ]))->toThrow(Exception::class);
 });
+
+it('can search permissions by name', function (): void {
+    Permission::factory()->create(['name' => 'Create Users']);
+    Permission::factory()->create(['name' => 'Edit Posts']);
+    Permission::factory()->create(['name' => 'Delete Users']);
+
+    $results = Permission::query()->search('Users')->get();
+
+    expect($results)->toHaveCount(2);
+});
+
+it('can search permissions by description', function (): void {
+    Permission::factory()->create(['name' => 'View Users', 'slug' => 'view-users-1', 'description' => 'Allows user management']);
+    Permission::factory()->create(['name' => 'Full Access', 'slug' => 'full-access', 'description' => 'Grants full access']);
+    Permission::factory()->create(['name' => 'Read Users', 'slug' => 'read-users', 'description' => 'Read-only user access']);
+
+    $results = Permission::query()->search('user')->get();
+
+    expect($results)->toHaveCount(2);
+});
+
+it('has validation rules for creating', function (): void {
+    $rules = Permission::createRules();
+
+    expect($rules)->toHaveKey('name')
+        ->and($rules)->toHaveKey('slug')
+        ->and($rules)->toHaveKey('description')
+        ->and($rules['name'])->toContain('required')
+        ->and($rules['slug'])->toContain('unique:permissions,slug');
+});
+
+it('has validation rules for updating', function (): void {
+    $permission = Permission::factory()->create();
+    $rules = Permission::updateRules($permission->id);
+
+    expect($rules)->toHaveKey('name')
+        ->and($rules)->toHaveKey('slug')
+        ->and($rules['name'])->toContain('sometimes')
+        ->and(implode(',', $rules['slug']))->toContain('unique:permissions,slug,'.$permission->id);
+});

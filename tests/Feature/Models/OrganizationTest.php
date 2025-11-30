@@ -68,3 +68,62 @@ it('can be inactive', function (): void {
 
     expect($organization->is_active)->toBeFalse();
 });
+
+it('can filter active organizations using scope', function (): void {
+    Organization::factory()->count(3)->create(['is_active' => true]);
+    Organization::factory()->count(2)->inactive()->create();
+
+    $activeOrganizations = Organization::query()->active()->get();
+
+    expect($activeOrganizations)->toHaveCount(3);
+});
+
+it('can filter inactive organizations using scope', function (): void {
+    Organization::factory()->count(3)->create(['is_active' => true]);
+    Organization::factory()->count(2)->inactive()->create();
+
+    $inactiveOrganizations = Organization::query()->inactive()->get();
+
+    expect($inactiveOrganizations)->toHaveCount(2);
+});
+
+it('can search organizations by name', function (): void {
+    Organization::factory()->create(['name' => 'Acme Corporation']);
+    Organization::factory()->create(['name' => 'Beta Industries']);
+    Organization::factory()->create(['name' => 'Acme Solutions']);
+
+    $results = Organization::query()->search('Acme')->get();
+
+    expect($results)->toHaveCount(2);
+});
+
+it('can search organizations by description', function (): void {
+    Organization::factory()->create(['description' => 'Leading provider of solutions']);
+    Organization::factory()->create(['description' => 'Tech solutions company']);
+    Organization::factory()->create(['description' => 'Manufacturing company']);
+
+    $results = Organization::query()->search('solutions')->get();
+
+    expect($results)->toHaveCount(2);
+});
+
+it('has validation rules for creating', function (): void {
+    $rules = Organization::createRules();
+
+    expect($rules)->toHaveKey('name')
+        ->and($rules)->toHaveKey('slug')
+        ->and($rules)->toHaveKey('description')
+        ->and($rules)->toHaveKey('is_active')
+        ->and($rules['name'])->toContain('required')
+        ->and($rules['slug'])->toContain('unique:organizations,slug');
+});
+
+it('has validation rules for updating', function (): void {
+    $organization = Organization::factory()->create();
+    $rules = Organization::updateRules($organization->id);
+
+    expect($rules)->toHaveKey('name')
+        ->and($rules)->toHaveKey('slug')
+        ->and($rules['name'])->toContain('sometimes')
+        ->and(implode(',', $rules['slug']))->toContain('unique:organizations,slug,'.$organization->id);
+});

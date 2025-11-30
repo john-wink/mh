@@ -38,4 +38,18 @@ final class UserFactory extends Factory
             'email_verified_at' => null,
         ]);
     }
+
+    public function forOrganization(int $organizationId): self
+    {
+        return $this->state(fn (array $attributes): array => [
+            'organization_id' => $organizationId,
+        ]);
+    }
+
+    public function withPassword(string $password): self
+    {
+        return $this->state(fn (array $attributes): array => [
+            'password' => Hash::make($password),
+        ]);
+    }
 }
