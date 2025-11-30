@@ -17,5 +17,22 @@
     "team": 1,
     "sprint": 1,
     "startedAt": "2025-11-30T12:43:17.728Z"
+  },
+  {
+    "id": "EPIC-002",
+    "status": "in_progress",
+    "createdAt": "2025-11-30T14:53:29.322Z",
+    "taskIds": [
+      "TASK-007",
+      "TASK-008",
+      "TASK-009",
+      "TASK-010"
+    ],
+    "title": "Helper & Traits",
+    "description": "Create Traits for all Models for Example:\nTableNameTrait with functions like:\ntableName(bool $singular = false);\npivotTableName($model);\n\nAnd Create for each model uuid for routing! and create a trait for auto creating an uuid7 on create",
+    "estimatedStoryPoints": 5,
+    "team": 1,
+    "sprint": 1,
+    "startedAt": "2025-11-30T14:53:45.365Z"
   }
 ]

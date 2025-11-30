@@ -45,23 +45,33 @@ export class GitWorktreeManager {
 
     const worktreePath = join(this.worktreeBaseDir, agentId);
 
-    // If worktree already exists, return it
+    // If worktree already exists in our map, return it
     if (this.worktrees.has(agentId)) {
       console.log(chalk.yellow(`⚠️  Worktree for ${agentId} already exists`));
       return this.worktrees.get(agentId)!;
     }
 
+    const branch = branchName || `worktree/${agentId}`;
+
+    // FAILSAFE: Clean up any stale worktree registration or directory
     try {
-      // Create a new branch for this agent if not specified
-      const branch = branchName || `worktree/${agentId}`;
+      // Try to remove any existing registration (even if directory is missing)
+      await execAsync(`git worktree remove ${worktreePath} --force 2>/dev/null || true`, {
+        cwd: this.projectRoot,
+      });
+    } catch {
+      // Ignore errors - worktree might not exist
+    }
 
-      // Check if worktree directory exists
-      if (existsSync(worktreePath)) {
-        console.log(chalk.yellow(`⚠️  Removing existing worktree directory: ${worktreePath}`));
-        await rm(worktreePath, { recursive: true, force: true });
-      }
+    // Remove directory if it exists
+    if (existsSync(worktreePath)) {
+      console.log(chalk.yellow(`⚠️  Removing existing worktree directory: ${worktreePath}`));
+      await rm(worktreePath, { recursive: true, force: true });
+    }
 
-      // Create git worktree
+    // Now try to create the worktree
+    try {
+      // Try creating with new branch first
       await execAsync(`git worktree add -b ${branch} ${worktreePath}`, {
         cwd: this.projectRoot,
       });
@@ -69,12 +79,14 @@ export class GitWorktreeManager {
       this.worktrees.set(agentId, worktreePath);
       console.log(chalk.green(`✓ Created worktree for ${agentId}: ${worktreePath}`));
 
+      // Run composer setup in the new worktree
+      await this.runComposerSetup(worktreePath, agentId);
+
       return worktreePath;
     } catch (error) {
-      // If branch already exists, try to checkout the existing branch
+      // If branch already exists, checkout existing branch
       if (error instanceof Error && error.message.includes('already exists')) {
         try {
-          const branch = branchName || `worktree/${agentId}`;
           await execAsync(`git worktree add ${worktreePath} ${branch}`, {
             cwd: this.projectRoot,
           });
@@ -82,15 +94,70 @@ export class GitWorktreeManager {
           this.worktrees.set(agentId, worktreePath);
           console.log(chalk.green(`✓ Created worktree for ${agentId} (using existing branch): ${worktreePath}`));
 
+          // Run composer setup in the new worktree
+          await this.runComposerSetup(worktreePath, agentId);
+
           return worktreePath;
         } catch (retryError) {
-          console.error(chalk.red(`❌ Failed to create worktree for ${agentId}:`, retryError));
-          throw retryError;
+          // Last resort: force add worktree
+          console.log(chalk.yellow(`⚠️  Forcing worktree creation for ${agentId}...`));
+
+          try {
+            await execAsync(`git worktree add --force ${worktreePath} ${branch}`, {
+              cwd: this.projectRoot,
+            });
+
+            this.worktrees.set(agentId, worktreePath);
+            console.log(chalk.green(`✓ Force-created worktree for ${agentId}: ${worktreePath}`));
+
+            // Run composer setup in the new worktree
+            await this.runComposerSetup(worktreePath, agentId);
+
+            return worktreePath;
+          } catch (forceError) {
+            console.error(chalk.red(`❌ Failed to create worktree for ${agentId}:`, forceError));
+            throw forceError;
+          }
         }
       }
 
-      console.error(chalk.red(`❌ Failed to create worktree for ${agentId}:`, error));
-      throw error;
+      // If it's a different error, try force add as last resort
+      console.log(chalk.yellow(`⚠️  Attempting force worktree creation for ${agentId}...`));
+
+      try {
+        await execAsync(`git worktree add --force ${worktreePath} ${branch}`, {
+          cwd: this.projectRoot,
+        });
+
+        this.worktrees.set(agentId, worktreePath);
+        console.log(chalk.green(`✓ Force-created worktree for ${agentId}: ${worktreePath}`));
+
+        // Run composer setup in the new worktree
+        await this.runComposerSetup(worktreePath, agentId);
+
+        return worktreePath;
+      } catch (forceError) {
+        console.error(chalk.red(`❌ Failed to create worktree for ${agentId}:`, forceError));
+        throw forceError;
+      }
+    }
+  }
+
+  /**
+   * Run composer setup in the worktree
+   */
+  private async runComposerSetup(worktreePath: string, agentId: string): Promise<void> {
+    try {
+      console.log(chalk.blue(`📦 Running composer setup for ${agentId}...`));
+
+      await execAsync('composer run setup', {
+        cwd: worktreePath,
+      });
+
+      console.log(chalk.green(`✓ Composer setup completed for ${agentId}`));
+    } catch (error) {
+      console.log(chalk.yellow(`⚠️  Composer setup failed for ${agentId}, continuing anyway...`));
+      // Don't throw - we want the worktree to be created even if composer setup fails
     }
   }
 
