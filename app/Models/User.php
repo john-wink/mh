@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Traits\TableNameTrait;
+use App\Traits\UuidTrait;
 use Carbon\CarbonInterface;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -30,7 +31,7 @@ use Illuminate\Notifications\Notifiable;
 final class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, SoftDeletes, TableNameTrait;
+    use HasFactory, Notifiable, SoftDeletes, TableNameTrait,UuidTrait;
 
     /**
      * @var list<string>
