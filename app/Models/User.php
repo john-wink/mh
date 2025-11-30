@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 /**
  * @property-read int $id
@@ -31,7 +32,7 @@ use Illuminate\Notifications\Notifiable;
 final class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
-    use BelongsToTenant, HasFactory, Notifiable, SoftDeletes, TableNameTrait, UuidTrait;
+    use BelongsToTenant, HasApiTokens, HasFactory, Notifiable, SoftDeletes, TableNameTrait, UuidTrait;
 
     /**
      * @var list<string>
