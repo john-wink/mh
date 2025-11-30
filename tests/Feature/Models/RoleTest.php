@@ -94,3 +94,90 @@ it('allows same slug for different organizations', function (): void {
     expect($role1->slug)->toBe($role2->slug)
         ->and($role1->organization_id)->not->toBe($role2->organization_id);
 });
+
+it('can filter roles by organization using scope', function (): void {
+    $org1 = Organization::factory()->create();
+    $org2 = Organization::factory()->create();
+
+    Role::factory()->count(3)->create(['organization_id' => $org1->id]);
+    Role::factory()->count(2)->create(['organization_id' => $org2->id]);
+
+    $org1Roles = Role::query()->forOrganization($org1->id)->get();
+
+    expect($org1Roles)->toHaveCount(3);
+});
+
+it('can search roles by name', function (): void {
+    $organization = Organization::factory()->create();
+    Role::factory()->create(['organization_id' => $organization->id, 'name' => 'Admin Manager']);
+    Role::factory()->create(['organization_id' => $organization->id, 'name' => 'Content Editor']);
+    Role::factory()->create(['organization_id' => $organization->id, 'name' => 'System Admin']);
+
+    $results = Role::query()->search('Admin')->get();
+
+    expect($results)->toHaveCount(2);
+});
+
+it('can check if role has a specific permission', function (): void {
+    $role = Role::factory()->create();
+    $permission = Permission::factory()->create(['slug' => 'edit-posts']);
+
+    $role->permissions()->attach($permission);
+
+    expect($role->hasPermission('edit-posts'))->toBeTrue()
+        ->and($role->hasPermission('delete-posts'))->toBeFalse();
+});
+
+it('can give a permission to a role', function (): void {
+    $role = Role::factory()->create();
+    $permission = Permission::factory()->create();
+
+    $role->givePermission($permission);
+
+    expect($role->permissions)->toHaveCount(1)
+        ->and($role->hasPermission($permission->slug))->toBeTrue();
+});
+
+it('does not duplicate permissions when giving same permission twice', function (): void {
+    $role = Role::factory()->create();
+    $permission = Permission::factory()->create();
+
+    $role->givePermission($permission);
+    $role->givePermission($permission);
+
+    expect($role->permissions)->toHaveCount(1);
+});
+
+it('can revoke a permission from a role', function (): void {
+    $role = Role::factory()->create();
+    $permission = Permission::factory()->create();
+
+    $role->permissions()->attach($permission);
+    expect($role->permissions)->toHaveCount(1);
+
+    $role->revokePermission($permission);
+
+    expect($role->fresh()->permissions)->toHaveCount(0);
+});
+
+it('has validation rules for creating', function (): void {
+    $rules = Role::createRules();
+
+    expect($rules)->toHaveKey('organization_id')
+        ->and($rules)->toHaveKey('name')
+        ->and($rules)->toHaveKey('slug')
+        ->and($rules)->toHaveKey('description')
+        ->and($rules['organization_id'])->toContain('required')
+        ->and($rules['name'])->toContain('required');
+});
+
+it('has validation rules for updating', function (): void {
+    $role = Role::factory()->create();
+    $rules = Role::updateRules($role->id);
+
+    expect($rules)->toHaveKey('organization_id')
+        ->and($rules)->toHaveKey('name')
+        ->and($rules)->toHaveKey('slug')
+        ->and($rules['organization_id'])->toContain('sometimes')
+        ->and($rules['name'])->toContain('sometimes');
+});

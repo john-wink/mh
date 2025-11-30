@@ -30,6 +30,36 @@ final class Role extends Model
     use HasFactory, SoftDeletes, TableNameTrait,UuidTrait;
 
     /**
+     * Get validation rules for creating a role
+     *
+     * @return array<string, mixed>
+     */
+    public static function createRules(): array
+    {
+        return [
+            'organization_id' => ['required', 'integer', 'exists:organizations,id'],
+            'name' => ['required', 'string', 'max:255'],
+            'slug' => ['required', 'string', 'max:255', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'],
+            'description' => ['nullable', 'string', 'max:1000'],
+        ];
+    }
+
+    /**
+     * Get validation rules for updating a role
+     *
+     * @return array<string, mixed>
+     */
+    public static function updateRules(int $roleId): array
+    {
+        return [
+            'organization_id' => ['sometimes', 'integer', 'exists:organizations,id'],
+            'name' => ['sometimes', 'string', 'max:255'],
+            'slug' => ['sometimes', 'string', 'max:255', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'],
+            'description' => ['nullable', 'string', 'max:1000'],
+        ];
+    }
+
+    /**
      * @return array<string, string>
      */
     public function casts(): array
@@ -68,5 +98,54 @@ final class Role extends Model
     public function permissions(): BelongsToMany
     {
         return $this->belongsToMany(Permission::class);
+    }
+
+    /**
+     * Scope to filter roles by organization
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
+     */
+    public function scopeForOrganization($query, int $organizationId): void
+    {
+        $query->where('organization_id', $organizationId);
+    }
+
+    /**
+     * Scope to search roles by name or description
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
+     */
+    public function scopeSearch($query, string $term): void
+    {
+        $query->where(function ($q) use ($term): void {
+            $q->where('name', 'like', "%{$term}%")
+                ->orWhere('description', 'like', "%{$term}%");
+        });
+    }
+
+    /**
+     * Check if role has a specific permission
+     */
+    public function hasPermission(string $permissionSlug): bool
+    {
+        return $this->permissions()->where('slug', $permissionSlug)->exists();
+    }
+
+    /**
+     * Assign a permission to this role
+     */
+    public function givePermission(Permission $permission): void
+    {
+        if (! $this->hasPermission($permission->slug)) {
+            $this->permissions()->attach($permission);
+        }
+    }
+
+    /**
+     * Remove a permission from this role
+     */
+    public function revokePermission(Permission $permission): void
+    {
+        $this->permissions()->detach($permission);
     }
 }
