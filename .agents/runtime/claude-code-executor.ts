@@ -295,41 +295,56 @@ ${task.description}
 Story Points: ${task.storyPoints}
 Sprint: ${task.sprint}${epicContext}${dependencies}
 
-You have access to the following MCP servers:
-- **agent-orchestrator**: Task management tools
-  • get_assigned_task() - Get full task context
-  • complete_task(taskId, summary) - Mark task as done
-  • report_progress(taskId, status, message) - Update progress
-  • get_task_context(taskId) - Get epic & dependencies
+**IMPORTANT: MCP Tools Access**
+You have direct access to MCP tools through the Claude Code interface. These tools are already configured and ready to use - do NOT try to run \`php artisan mcp:list\` or similar commands. Just use the tools directly.
 
-- **laravel-boost**: Laravel development tools
-- **herd**: Local development services
-- **jetbrains**: IDE integration
+**Available MCP Servers & Tools:**
+
+**agent-orchestrator** - Task management (use these tools to interact with the task system):
+  • mcp__agent_orchestrator__get_assigned_task() - Get your complete task details
+  • mcp__agent_orchestrator__complete_task(taskId, summary) - Mark task as done when finished
+  • mcp__agent_orchestrator__report_progress(taskId, status, message) - Update your progress
+  • mcp__agent_orchestrator__get_task_context(taskId) - Get epic & dependency information
+
+**laravel-boost** - Laravel development tools (database, tinker, logs, tests, etc.):
+  • mcp__laravel_boost__database_schema() - View database structure
+  • mcp__laravel_boost__database_query(query) - Run SELECT queries
+  • mcp__laravel_boost__tinker(code) - Execute PHP in Laravel context
+  • mcp__laravel_boost__last_error() - Get last backend error
+  • mcp__laravel_boost__browser_logs(entries) - Get frontend errors
+  • mcp__laravel_boost__read_log_entries(entries) - Read application logs
+  • mcp__laravel_boost__list_routes() - List all routes
+  • mcp__laravel_boost__search_docs(queries, packages) - Search Laravel docs
+  • And many more - check the tool list in Claude Code
+
+**herd** - Local development services (MySQL, Redis, etc.)
+**jetbrains** - PhpStorm/IDE integration
 
 **Your workflow:**
-1. Use get_assigned_task() to get complete context
+1. Start immediately - use mcp__agent_orchestrator__get_assigned_task() if you need more context
 2. Analyze the task and plan your approach
-3. Use report_progress() to update status as you work
+3. Use mcp__agent_orchestrator__report_progress() to update status as you work
 4. Implement the solution following Laravel best practices
 5. Write comprehensive tests for your changes
-6. **CRITICAL:** Before committing, run the ENTIRE test suite with \`php artisan test\`
+6. **CRITICAL:** Before committing, run \`vendor/bin/rector\` then \`vendor/bin/pint\`
+7. **CRITICAL:** Before committing, run the ENTIRE test suite with \`php artisan test\`
    - If ANY test fails (even existing ones not related to your changes):
      * Investigate the failure
      * Either fix the bug causing the test to fail
      * OR update the test if it's outdated
    - Do NOT proceed until ALL tests pass
-7. After all tests pass, commit your changes
-8. **CRITICAL:** When finished, call complete_task(taskId="${task.id}", summary="<your summary>")
-9. After calling complete_task(), you can exit (the system will auto-merge your branch to gitbutler/workspace)
+8. After all tests pass, commit your changes
+9. **CRITICAL:** When finished, call mcp__agent_orchestrator__complete_task(taskId="${task.id}", summary="<your summary>")
+10. After calling complete_task(), you can exit (the system will auto-merge your branch to gitbutler/workspace)
 
 **Important:**
 - All changes are in your dedicated worktree (isolated from other agents)
-- Commit your changes only after ALL tests pass
-- Write tests for all code
-- Follow Laravel best practices
+- Follow the CLAUDE.md guidelines (especially for Laravel, Filament, Pest, etc.)
+- **You MUST run rector + pint before every commit**
 - **You MUST run the full test suite before every commit - no exceptions**
-- **You MUST call complete_task() to mark the task as done - this is how the system knows you're finished**
+- **You MUST call mcp__agent_orchestrator__complete_task() to mark the task as done**
 - After complete_task() is called, simply exit this session (Ctrl+C or end conversation)
+- Do NOT try to use artisan commands to access MCP tools - they're already available directly
 
 Ready to start working on this task?`;
   }
