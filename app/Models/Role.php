@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Traits\BelongsToTenant;
 use App\Traits\TableNameTrait;
 use App\Traits\UuidTrait;
 use Carbon\CarbonInterface;
 use Database\Factories\RoleFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -27,7 +27,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 final class Role extends Model
 {
     /** @use HasFactory<RoleFactory> */
-    use HasFactory, SoftDeletes, TableNameTrait,UuidTrait;
+    use BelongsToTenant, HasFactory, SoftDeletes, TableNameTrait, UuidTrait;
 
     /**
      * Get validation rules for creating a role
@@ -74,14 +74,6 @@ final class Role extends Model
             'updated_at' => 'datetime',
             'deleted_at' => 'datetime',
         ];
-    }
-
-    /**
-     * @return BelongsTo<Organization, $this>
-     */
-    public function organization(): BelongsTo
-    {
-        return $this->belongsTo(Organization::class);
     }
 
     /**
