@@ -1,0 +1,15 @@
+{
+    "agents": [
+        "claude_code",
+        "cursor",
+        "phpstorm"
+    ],
+    "editors": [
+        "phpstorm",
+        "vscode"
+    ],
+    "guidelines": [
+        "filament/filament"
+    ],
+    "herd_mcp": true
+}

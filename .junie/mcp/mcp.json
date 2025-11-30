@@ -1,0 +1,20 @@
+{
+    "mcpServers": {
+        "laravel-boost": {
+            "command": "/Users/johnwink/Library/Application Support/Herd/bin/php84",
+            "args": [
+                "/Users/johnwink/Herd/manhunt/artisan",
+                "boost:mcp"
+            ]
+        },
+        "herd": {
+            "command": "/Users/johnwink/Library/Application Support/Herd/bin/php84",
+            "args": [
+                "/Applications/Herd.app/Contents/Resources/herd-mcp.phar"
+            ],
+            "env": {
+                "SITE_PATH": "/Users/johnwink/Herd/manhunt"
+            }
+        }
+    }
+}

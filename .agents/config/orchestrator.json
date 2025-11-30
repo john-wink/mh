@@ -1,0 +1,49 @@
+{
+  "orchestrator": {
+    "name": "Manhunt Development Orchestrator",
+    "version": "1.0.0",
+    "currentSprint": 1,
+    "sprintDuration": "1 week",
+    "projectRoot": "/Users/johnwink/Herd/manhunt",
+    "boardDirectory": "/Users/johnwink/Herd/manhunt/.board",
+    "agentDirectory": "/Users/johnwink/Herd/manhunt/.agents"
+  },
+  "settings": {
+    "maxConcurrentAgents": 28,
+    "autoAssignTasks": true,
+    "requireHumanApproval": {
+      "architectureChanges": true,
+      "breaking Changes": true,
+      "securityChanges": true,
+      "databaseMigrations": false
+    },
+    "codeReview": {
+      "enabled": true,
+      "automaticApproval": false,
+      "minimumApprovals": 1,
+      "reviewerAgent": "code-review-agent"
+    },
+    "testing": {
+      "requireTests": true,
+      "minimumCoverage": 90,
+      "runTestsBeforeMerge": true
+    },
+    "dailyStandup": {
+      "enabled": true,
+      "time": "09:00",
+      "timezone": "Europe/Vienna",
+      "slackChannel": "#manhunt-dev"
+    }
+  },
+  "monitoring": {
+    "trackVelocity": true,
+    "trackQuality": true,
+    "alertOnBlockers": true,
+    "dashboardPort": 3000
+  },
+  "collaboration": {
+    "communicationProtocol": "mcp",
+    "sharedKnowledgeBase": "/Users/johnwink/Herd/manhunt/.board",
+    "codeRepository": "/Users/johnwink/Herd/manhunt"
+  }
+}
