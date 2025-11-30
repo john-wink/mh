@@ -15,14 +15,16 @@
   },
   {
     "id": "TASK-002",
-    "status": "pending",
+    "status": "in_progress",
     "title": "Core Models and Relationships Implementation",
     "description": "Implement Laravel Eloquent models for Organization, User, Role, and Permission with proper relationships, scopes for tenant isolation, and model factories for testing. Include validation rules and attribute casting.",
     "storyPoints": 3,
     "dependencies": [],
     "team": 1,
     "sprint": 1,
-    "epicId": "EPIC-001"
+    "epicId": "EPIC-001",
+    "assignedTo": "team-1-backend-1",
+    "startedAt": "2025-11-30T17:33:25.017Z"
   },
   {
     "id": "TASK-003",

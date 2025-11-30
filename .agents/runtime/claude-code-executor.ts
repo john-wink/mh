@@ -97,7 +97,7 @@ export class ClaudeCodeExecutor {
    * Create MCP config for this session in the worktree directory
    */
   private async createMCPConfig(worktreePath: string, agentId: string, taskId: string): Promise<void> {
-    const { mkdir } = await import('fs/promises');
+    const { mkdir, copyFile } = await import('fs/promises');
     const claudeDir = join(worktreePath, '.claude');
 
     // Create .claude directory if it doesn't exist
@@ -117,6 +117,12 @@ export class ClaudeCodeExecutor {
           },
           alwaysAllow: ['tools', 'resources'],
         },
+        'laravel-boost': {
+          command: 'php',
+          args: ['artisan', 'boost:mcp'],
+          cwd: this.projectRoot,
+          alwaysAllow: ['tools', 'resources'],
+        },
       },
       globalSettings: {
         autoApprove: true,
@@ -126,6 +132,39 @@ export class ClaudeCodeExecutor {
     // Write config to worktree .claude directory
     const configPath = join(claudeDir, 'mcp-config.json');
     await writeFile(configPath, JSON.stringify(mcpConfig, null, 2));
+
+    // Copy settings.local.json from project root to worktree for auto-approval
+    const settingsSource = join(this.projectRoot, '.claude', 'settings.local.json');
+    const settingsTarget = join(claudeDir, 'settings.local.json');
+
+    try {
+      await copyFile(settingsSource, settingsTarget);
+      console.log(chalk.blue(`✓ Copied settings to worktree`));
+    } catch (error) {
+      console.log(chalk.yellow(`⚠️  Could not copy settings: ${error}`));
+
+      // Create default settings with auto-approval
+      const defaultSettings = {
+        permissions: {
+          allow: ['mcp__*', 'Bash', 'WebFetch(domain:manhunt.at)'],
+        },
+        enableAllProjectMcpServers: true,
+        enabledMcpjsonServers: ['laravel-boost'],
+      };
+      await writeFile(settingsTarget, JSON.stringify(defaultSettings, null, 2));
+      console.log(chalk.blue(`✓ Created default settings in worktree`));
+    }
+
+    // Copy .mcp.json from project root to worktree
+    const mcpJsonSource = join(this.projectRoot, '.mcp.json');
+    const mcpJsonTarget = join(worktreePath, '.mcp.json');
+
+    try {
+      await copyFile(mcpJsonSource, mcpJsonTarget);
+      console.log(chalk.blue(`✓ Copied .mcp.json to worktree`));
+    } catch (error) {
+      console.log(chalk.yellow(`⚠️  Could not copy .mcp.json: ${error}`));
+    }
 
     console.log(chalk.blue(`✓ Created MCP config for ${agentId} in worktree`));
   }
@@ -144,60 +183,90 @@ export class ClaudeCodeExecutor {
     console.log(chalk.gray(`   Working Directory: ${config.workingDirectory}`));
     console.log(chalk.gray(`   MCP Config: ${this.mcpConfigPath}`));
 
-    return new Promise((resolve) => {
+    return new Promise(async (resolve) => {
       console.log(chalk.cyan(`\n┌─────────────────────────────────────────────────────┐`));
       console.log(chalk.cyan(`│  Claude Code Session for ${config.agentName.padEnd(24)} │`));
       console.log(chalk.cyan(`│  Task: ${config.taskId.padEnd(40)} │`));
       console.log(chalk.cyan(`└─────────────────────────────────────────────────────┘\n`));
 
-      // Escape single quotes in the prompt for AppleScript
-      const escapedPrompt = config.initialPrompt.replace(/'/g, "'\\''");
+      try {
+        // Create a temporary shell script to run Claude Code
+        const { mkdtemp, writeFile: fsWriteFile, chmod } = await import('fs/promises');
+        const { tmpdir } = await import('os');
+        const tempDir = await mkdtemp(join(tmpdir(), 'claude-code-'));
+        const scriptPath = join(tempDir, 'start-claude.sh');
 
-      // Build command to run in new Terminal window
-      const command = `cd '${config.workingDirectory}' && claude '${escapedPrompt}'`;
+        // Write the prompt to a separate file to avoid escaping issues
+        const promptPath = join(tempDir, 'prompt.txt');
+        await fsWriteFile(promptPath, config.initialPrompt);
 
-      // AppleScript to open new Terminal window and run Claude Code
-      const appleScript = `
-        tell application "Terminal"
-          do script "${command.replace(/"/g, '\\"')}"
-          activate
-        end tell
-      `;
+        // Create shell script that will run in new Terminal
+        const shellScript = `#!/bin/bash
+cd "${config.workingDirectory}"
+claude "$(cat '${promptPath}')"
+rm -rf "${tempDir}"
+`;
 
-      // Execute AppleScript to open new Terminal window
-      const osascriptProcess = spawn('osascript', ['-e', appleScript], {
-        stdio: 'pipe',
-      });
+        await fsWriteFile(scriptPath, shellScript);
+        await chmod(scriptPath, 0o755);
 
-      osascriptProcess.on('close', (code) => {
-        if (code === 0) {
-          console.log(chalk.green(`\n✓ Claude Code session started in new Terminal window`));
-          console.log(chalk.yellow(`   Note: Close the Terminal window when you're done with the task`));
-          resolve({
-            success: true,
-            exitCode: 0,
-            output: 'Claude Code started in new Terminal window',
-          });
-        } else {
-          console.log(chalk.red(`\n✗ Failed to open new Terminal window (exit code ${code})`));
+        // AppleScript to open new Terminal window and run the script
+        const appleScript = `tell application "Terminal"
+    do script "${scriptPath}"
+    activate
+end tell`;
+
+        // Execute AppleScript to open new Terminal window
+        const osascriptProcess = spawn('osascript', ['-e', appleScript], {
+          stdio: ['pipe', 'pipe', 'pipe'],
+        });
+
+        let errorOutput = '';
+        osascriptProcess.stderr?.on('data', (data) => {
+          errorOutput += data.toString();
+        });
+
+        osascriptProcess.on('close', (code) => {
+          if (code === 0) {
+            console.log(chalk.green(`\n✓ Claude Code session started in new Terminal window`));
+            console.log(chalk.yellow(`   Note: Close the Terminal window when you're done with the task`));
+            resolve({
+              success: true,
+              exitCode: 0,
+              output: 'Claude Code started in new Terminal window',
+            });
+          } else {
+            console.log(chalk.red(`\n✗ Failed to open new Terminal window (exit code ${code})`));
+            if (errorOutput) {
+              console.log(chalk.red(`   Error: ${errorOutput}`));
+            }
+            resolve({
+              success: false,
+              exitCode: code || 1,
+              output: '',
+              error: `Failed to open Terminal window: ${errorOutput}`,
+            });
+          }
+        });
+
+        osascriptProcess.on('error', (error) => {
+          console.error(chalk.red(`\n❌ Failed to start Terminal:`), error.message);
           resolve({
             success: false,
-            exitCode: code || 1,
+            exitCode: 1,
             output: '',
-            error: `Failed to open Terminal window`,
+            error: error.message,
           });
-        }
-      });
-
-      osascriptProcess.on('error', (error) => {
-        console.error(chalk.red(`\n❌ Failed to start Terminal:`), error.message);
+        });
+      } catch (error) {
+        console.error(chalk.red(`\n❌ Failed to create launch script:`), error);
         resolve({
           success: false,
           exitCode: 1,
           output: '',
-          error: error.message,
+          error: error instanceof Error ? error.message : 'Unknown error',
         });
-      });
+      }
     });
   }
 
