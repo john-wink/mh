@@ -44,32 +44,46 @@ export class AgentManager {
       throw new Error('ANTHROPIC_API_KEY environment variable is required');
     }
 
+    // Initialize agents WITHOUT creating worktrees (lazy loading)
     for (const agentConfig of this.config.agents) {
-      // If worktrees are enabled, create a worktree for each agent
-      if (this.worktreeManager) {
-        try {
-          const worktreePath = await this.worktreeManager.createWorktreeForAgent(agentConfig.id);
+      const agent = new Agent(agentConfig, apiKey);
+      this.agents.set(agent.id, agent);
+    }
 
-          // Update agent config to use worktree directory
-          const agentConfigWithWorktree = {
-            ...agentConfig,
-            workingDirectory: worktreePath,
-          };
+    console.log(chalk.blue(`✓ Initialized ${this.agents.size} agents (worktrees will be created on-demand)`));
+  }
 
-          const agent = new Agent(agentConfigWithWorktree, apiKey);
-          this.agents.set(agent.id, agent);
+  /**
+   * Ensure agent has a worktree (create on-demand if needed)
+   */
+  private async ensureAgentWorktree(agentId: string): Promise<void> {
+    if (!this.worktreeManager) {
+      return; // Worktrees not enabled
+    }
 
-          console.log(chalk.green(`✓ Agent ${agentConfig.name} initialized with worktree: ${worktreePath}`));
-        } catch (error) {
-          console.error(chalk.red(`❌ Failed to create worktree for ${agentConfig.name}:`, error));
-          // Fall back to regular directory
-          const agent = new Agent(agentConfig, apiKey);
-          this.agents.set(agent.id, agent);
-        }
-      } else {
-        const agent = new Agent(agentConfig, apiKey);
-        this.agents.set(agent.id, agent);
-      }
+    const agent = this.agents.get(agentId);
+    if (!agent) {
+      throw new Error(`Agent ${agentId} not found`);
+    }
+
+    // Check if worktree already exists
+    const existingWorktreePath = this.worktreeManager.getWorktreePath(agentId);
+    if (existingWorktreePath) {
+      return; // Worktree already exists
+    }
+
+    // Create worktree on-demand
+    try {
+      console.log(chalk.blue(`📦 Creating worktree for ${agent.name} (on-demand)...`));
+      const worktreePath = await this.worktreeManager.createWorktreeForAgent(agentId);
+
+      // Update agent's working directory
+      agent.updateWorkingDirectory(worktreePath);
+
+      console.log(chalk.green(`✓ Worktree created for ${agent.name}: ${worktreePath}`));
+    } catch (error) {
+      console.error(chalk.red(`❌ Failed to create worktree for ${agent.name}:`, error));
+      throw error;
     }
   }
 
@@ -165,6 +179,9 @@ export class AgentManager {
     const agent = this.findBestAgentForTask(task);
     if (!agent) return { success: false, message: `No available agent found for task ${taskId}` };
 
+    // Ensure agent has a worktree (create on-demand)
+    await this.ensureAgentWorktree(agent.id);
+
     await this.taskManager.assignTask(taskId, agent.id);
     await agent.assignTask(task);
 
@@ -182,6 +199,9 @@ export class AgentManager {
 
     const agent = this.getAgent(task.assignedTo!);
     if (!agent) return { success: false, output: `Agent ${task.assignedTo} not found` };
+
+    // Ensure agent has a worktree before executing (in case it was assigned manually)
+    await this.ensureAgentWorktree(agent.id);
 
     const result = await agent.executeTask(task, this.costTracker);
 

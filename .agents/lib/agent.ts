@@ -424,4 +424,12 @@ If you need information from other teams or agents, clearly state what you need.
       return false;
     }
   }
+
+  /**
+   * Update agent's working directory (used when worktree is created on-demand)
+   */
+  updateWorkingDirectory(newWorkingDirectory: string): void {
+    this.config.workingDirectory = newWorkingDirectory;
+    this.gitManager = new GitManager(newWorkingDirectory);
+  }
 }
