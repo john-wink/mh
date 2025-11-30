@@ -286,6 +286,20 @@ export class GitWorktreeManager {
       });
 
       console.log(chalk.green(`✓ Merged ${agentId}'s branch into ${targetBranch}`));
+
+      // Delete the agent's branch after successful merge
+      try {
+        await execAsync(`git branch -D ${branch}`, {
+          cwd: this.projectRoot,
+        });
+        console.log(chalk.blue(`✓ Deleted merged branch: ${branch}`));
+      } catch (branchDeleteError) {
+        console.log(
+          chalk.yellow(
+            `⚠️  Could not delete branch ${branch}: ${branchDeleteError instanceof Error ? branchDeleteError.message : 'Unknown error'}`
+          )
+        );
+      }
     } catch (error) {
       console.error(chalk.red(`❌ Failed to merge branch for ${agentId}:`, error));
       throw error;

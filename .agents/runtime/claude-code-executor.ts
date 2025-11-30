@@ -148,23 +148,36 @@ export class ClaudeCodeExecutor {
         permissions: {
           allow: ['mcp__*', 'Bash', 'WebFetch(domain:manhunt.at)'],
         },
-        enableAllProjectMcpServers: true,
-        enabledMcpjsonServers: ['laravel-boost'],
+        enabledMcpjsonServers: ['laravel-boost', 'agent-orchestrator'],
       };
       await writeFile(settingsTarget, JSON.stringify(defaultSettings, null, 2));
       console.log(chalk.blue(`✓ Created default settings in worktree`));
     }
 
-    // Copy .mcp.json from project root to worktree
-    const mcpJsonSource = join(this.projectRoot, '.mcp.json');
-    const mcpJsonTarget = join(worktreePath, '.mcp.json');
+    // Create .mcp.json in worktree with all needed MCP servers
+    const worktreeMcpConfig = {
+      mcpServers: {
+        'laravel-boost': {
+          command: 'php',
+          args: ['artisan', 'boost:mcp'],
+          cwd: this.projectRoot,
+        },
+        'agent-orchestrator': {
+          command: 'npm',
+          args: ['run', 'mcp-server'],
+          cwd: join(this.projectRoot, '.agents'),
+          env: {
+            BOARD_DIRECTORY: join(this.projectRoot, '.board/tasks'),
+            AGENT_ID: agentId,
+            TASK_ID: taskId,
+          },
+        },
+      },
+    };
 
-    try {
-      await copyFile(mcpJsonSource, mcpJsonTarget);
-      console.log(chalk.blue(`✓ Copied .mcp.json to worktree`));
-    } catch (error) {
-      console.log(chalk.yellow(`⚠️  Could not copy .mcp.json: ${error}`));
-    }
+    const mcpJsonTarget = join(worktreePath, '.mcp.json');
+    await writeFile(mcpJsonTarget, JSON.stringify(worktreeMcpConfig, null, 2));
+    console.log(chalk.blue(`✓ Created .mcp.json in worktree`));
 
     console.log(chalk.blue(`✓ Created MCP config for ${agentId} in worktree`));
   }

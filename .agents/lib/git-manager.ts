@@ -199,8 +199,8 @@ Task: ${taskId}
 
       console.log(`✓ Merged ${branchName} to main`);
 
-      // Delete branch
-      await this.executeGit(`branch -d ${branchName}`);
+      // Delete branch (force delete to handle all cases)
+      await this.executeGit(`branch -D ${branchName}`);
 
       console.log(`✓ Deleted branch: ${branchName}`);
     } catch (error) {
