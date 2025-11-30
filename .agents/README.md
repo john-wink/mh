@@ -4,7 +4,7 @@ Multi-Agent Development System for the Manhunt SaaS Platform.
 
 ## Overview
 
-This orchestrator manages a team of 28 AI agents (Claude models) that work collaboratively to build the Manhunt platform. Each agent has specific roles, expertise, and capabilities, mimicking a real development team.
+This orchestrator manages a team of 30 AI agents (Claude models) that work collaboratively to build the Manhunt platform. Each agent has specific roles, expertise, and capabilities, mimicking a real development team.
 
 ## Architecture
 
@@ -21,8 +21,13 @@ This orchestrator manages a team of 28 AI agents (Claude models) that work colla
 │   ├── scheduler.ts      # Task scheduling
 │   ├── monitoring.ts     # Progress tracking
 │   └── collaboration.ts  # Inter-agent communication
+├── dashboard/             # Web dashboard
+│   ├── server.ts         # Dashboard server
+│   └── public/           # Static assets
+│       ├── index.html    # Dashboard UI
+│       └── dashboard.js  # Client-side logic
 ├── config/                # Configuration files
-│   ├── agents.json       # Agent definitions
+│   ├── agents.json       # Agent definitions (30 agents)
 │   └── orchestrator.json # Orchestrator settings
 └── package.json
 ```
@@ -47,6 +52,17 @@ npm run start -- agents
 ```
 
 ## Usage
+
+### Start Dashboard (Recommended)
+```bash
+npm run dashboard
+```
+
+Then open http://localhost:3000 in your browser to see:
+- Real-time agent status
+- Team progress
+- Task assignments
+- Sprint metrics
 
 ### List all agents
 ```bash

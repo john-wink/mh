@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import type { Agent as AgentConfig } from './config.js';
+import { GitManager } from './git-manager.js';
 
 export interface Task {
   id: string;
@@ -21,10 +22,13 @@ export class Agent {
   private config: AgentConfig;
   private currentTasks: Task[] = [];
   private completedTasks: Task[] = [];
+  private gitManager: GitManager;
+  private currentBranch?: string;
 
   constructor(config: AgentConfig, apiKey: string) {
     this.config = config;
     this.client = new Anthropic({ apiKey });
+    this.gitManager = new GitManager(config.workingDirectory);
   }
 
   get id(): string {
@@ -105,18 +109,36 @@ export class Agent {
     task.status = 'in_progress';
     task.startedAt = new Date();
     this.currentTasks.push(task);
+
+    // Create Git branch for this task
+    try {
+      this.currentBranch = await this.gitManager.createTaskBranch(this.id, task.id);
+      console.log(`✓ ${this.name} created branch: ${this.currentBranch}`);
+    } catch (error) {
+      console.log(`⚠️  Could not create Git branch: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   }
 
-  async executeTask(task: Task): Promise<{ success: boolean; output: string }> {
+  async executeTask(task: Task, costTracker?: any): Promise<{ success: boolean; output: string; cost?: any }> {
     const systemPrompt = this.buildSystemPrompt();
     const userPrompt = this.buildUserPrompt(task);
 
     try {
+      // Create checkpoint before starting work
+      await this.createCheckpoint(task, 'before-task-start');
+
+      // Use prompt caching for system prompt (90% cheaper!)
       const response = await this.client.messages.create({
         model: this.mapModelPreference(),
         max_tokens: 8192,
         temperature: this.temperature,
-        system: systemPrompt,
+        system: [
+          {
+            type: 'text',
+            text: systemPrompt,
+            cache_control: { type: 'ephemeral' }, // ← Enable caching!
+          },
+        ],
         messages: [
           {
             role: 'user',
@@ -130,11 +152,45 @@ export class Agent {
         .map((block) => ('text' in block ? block.text : ''))
         .join('\n');
 
+      // Track costs
+      let cost;
+      if (costTracker && response.usage) {
+        cost = await costTracker.trackUsage(
+          this.mapModelPreference(),
+          response.usage.input_tokens || 0,
+          response.usage.output_tokens || 0,
+          response.usage.cache_read_input_tokens || 0,
+          this.id,
+          task.id
+        );
+
+        console.log(`💰 Cost: $${cost.totalCost.toFixed(4)} (Saved: $${cost.costSaved.toFixed(4)} via cache)`);
+      }
+
+      // Commit changes after task execution
+      await this.commitProgress(task, 'Task implementation completed');
+
+      // Create checkpoint after completion
+      await this.createCheckpoint(task, 'after-task-completion');
+
       return {
         success: true,
         output,
+        cost,
       };
     } catch (error) {
+      // Check if it's a spending limit error
+      if (error instanceof Error && error.message.includes('spending limit')) {
+        console.log(`🛑 ${error.message}`);
+        return {
+          success: false,
+          output: `Task stopped: ${error.message}`,
+        };
+      }
+
+      // Rollback on error
+      await this.rollbackTask(task);
+
       return {
         success: false,
         output: error instanceof Error ? error.message : 'Unknown error',
@@ -206,7 +262,7 @@ Please complete this task following best practices. Provide a summary of:
 If you need information from other teams or agents, clearly state what you need.`;
   }
 
-  completeTask(task: Task): void {
+  async completeTask(task: Task): Promise<void> {
     task.status = 'completed';
     task.completedAt = new Date();
 
@@ -214,6 +270,20 @@ If you need information from other teams or agents, clearly state what you need.
     if (index !== -1) {
       this.currentTasks.splice(index, 1);
       this.completedTasks.push(task);
+    }
+
+    // Final commit before merging
+    await this.commitProgress(task, 'Task completed - ready for review');
+
+    // Merge branch back to main (if code review passed)
+    if (this.currentBranch) {
+      try {
+        await this.gitManager.mergeToMain(this.currentBranch, task.id);
+        console.log(`✓ ${this.name} merged task ${task.id} to main`);
+        this.currentBranch = undefined;
+      } catch (error) {
+        console.log(`⚠️  Could not merge to main: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
     }
   }
 
@@ -246,5 +316,96 @@ If you need information from other teams or agents, clearly state what you need.
       currentLoad: this.getCurrentLoad(),
       completedStoryPoints: this.getCompletedStoryPoints(),
     };
+  }
+
+  // Git helper methods
+
+  /**
+   * Commit current progress on the task
+   */
+  async commitProgress(task: Task, message: string): Promise<void> {
+    try {
+      await this.gitManager.commit(
+        this.id,
+        this.name,
+        task.id,
+        message
+      );
+    } catch (error) {
+      console.log(`⚠️  Could not commit: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Commit with automatic test validation
+   */
+  async commitWithTests(task: Task, message: string, testCommand: string = 'php artisan test'): Promise<boolean> {
+    try {
+      const result = await this.gitManager.commitWithTests(
+        this.id,
+        this.name,
+        task.id,
+        message,
+        testCommand
+      );
+
+      if (!result.success) {
+        console.log(`✗ Tests failed, changes rolled back: ${result.error}`);
+        return false;
+      }
+
+      console.log(`✓ Changes committed and tests passed`);
+      return true;
+    } catch (error) {
+      console.log(`⚠️  Could not commit with tests: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      return false;
+    }
+  }
+
+  /**
+   * Create a checkpoint (tag) for this task
+   */
+  async createCheckpoint(task: Task, description: string): Promise<void> {
+    try {
+      await this.gitManager.createCheckpoint(task.id, description);
+    } catch (error) {
+      console.log(`⚠️  Could not create checkpoint: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Rollback task to last checkpoint
+   */
+  async rollbackTask(task: Task): Promise<void> {
+    try {
+      // Find last checkpoint for this task
+      const checkpointName = `checkpoint/${task.id}`;
+      await this.gitManager.rollback(checkpointName);
+      console.log(`✓ Rolled back task ${task.id} to last checkpoint`);
+    } catch (error) {
+      console.log(`⚠️  Could not rollback: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Get Git history for current branch
+   */
+  async getTaskHistory(limit: number = 10): Promise<any[]> {
+    try {
+      return await this.gitManager.getHistory(limit);
+    } catch (error) {
+      return [];
+    }
+  }
+
+  /**
+   * Check if working directory is clean
+   */
+  async isWorkingDirectoryClean(): Promise<boolean> {
+    try {
+      return await this.gitManager.isClean();
+    } catch (error) {
+      return false;
+    }
   }
 }

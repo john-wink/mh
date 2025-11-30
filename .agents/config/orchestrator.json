@@ -45,5 +45,67 @@
     "communicationProtocol": "mcp",
     "sharedKnowledgeBase": "/Users/johnwink/Herd/manhunt/.board",
     "codeRepository": "/Users/johnwink/Herd/manhunt"
+  },
+  "git": {
+    "enabled": true,
+    "branchPerAgent": true,
+    "autoCommit": true,
+    "commitFrequency": "per-file",
+    "testBeforeCommit": true,
+    "testCommand": "php artisan test --filter",
+    "autoMerge": false,
+    "requireCodeReview": true,
+    "branchNaming": "agent/{agentId}/{taskId}-{timestamp}",
+    "checkpoints": {
+      "enabled": true,
+      "createBeforeTask": true,
+      "createAfterTask": true,
+      "createOnTestFailure": true
+    },
+    "rollback": {
+      "enabled": true,
+      "autoRollbackOnTestFailure": true,
+      "autoRollbackOnError": true
+    },
+    "push": {
+      "enabled": false,
+      "pushToRemote": false,
+      "requirePullRequest": true
+    }
+  },
+  "costs": {
+    "tracking": {
+      "enabled": true,
+      "storageDirectory": "/Users/johnwink/Herd/manhunt/.agents/data",
+      "showInDashboard": true,
+      "alertOnHighCost": true,
+      "highCostThreshold": 1.0
+    },
+    "caching": {
+      "enabled": true,
+      "cacheSystemPrompts": true,
+      "cacheContextFiles": true
+    },
+    "limits": {
+      "daily": 5.0,
+      "weekly": 25.0,
+      "monthly": 50.0,
+      "perTask": 2.0,
+      "perAgent": 5.0,
+      "total": 50.0
+    },
+    "alerts": {
+      "enabled": true,
+      "notifyAt": [0.5, 0.75, 0.9, 1.0],
+      "stopAtLimit": true,
+      "email": "",
+      "slack": ""
+    },
+    "optimization": {
+      "preferCheaperModels": true,
+      "autoSwitchToHaiku": false,
+      "batchRequests": true,
+      "maxConcurrentRequests": 10
+    }
   }
 }

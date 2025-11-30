@@ -106,7 +106,7 @@
       "id": "team-2-lead",
       "team": 2,
       "name": "Team 2 Lead Agent",
-      "role": "Senior Backend Developer (GPS)",
+      "role": "Senior Backend Developer (GPS & Algorithms)",
       "expertise": [
         "Algorithms",
         "Geo-Data",
@@ -127,6 +127,749 @@
       "boardDirectory": "/Users/johnwink/Herd/manhunt/.board/team-2-gps-tracking",
       "modelPreference": "claude-opus-4",
       "temperature": 0.2
+    },
+    {
+      "id": "team-2-backend-1",
+      "team": 2,
+      "name": "Team 2 GPS Developer 1",
+      "role": "GPS Integration Specialist",
+      "expertise": [
+        "GPS APIs",
+        "Garmin Integration",
+        "Spot Integration",
+        "Data Fusion"
+      ],
+      "capabilities": {
+        "codeGeneration": true,
+        "codeReview": false,
+        "architectureDesign": false,
+        "testing": true,
+        "documentation": true
+      },
+      "maxConcurrentTasks": 2,
+      "sprintCapacity": 20,
+      "reportsTo": "team-2-lead",
+      "workingDirectory": "/Users/johnwink/Herd/manhunt",
+      "boardDirectory": "/Users/johnwink/Herd/manhunt/.board/team-2-gps-tracking",
+      "modelPreference": "claude-sonnet-4-5",
+      "temperature": 0.3
+    },
+    {
+      "id": "team-2-backend-2",
+      "team": 2,
+      "name": "Team 2 GPS Developer 2",
+      "role": "Geospatial Developer",
+      "expertise": [
+        "PostGIS",
+        "Spatial Queries",
+        "Geofencing",
+        "Distance Calculations"
+      ],
+      "capabilities": {
+        "codeGeneration": true,
+        "codeReview": false,
+        "architectureDesign": false,
+        "testing": true,
+        "documentation": true
+      },
+      "maxConcurrentTasks": 2,
+      "sprintCapacity": 20,
+      "reportsTo": "team-2-lead",
+      "workingDirectory": "/Users/johnwink/Herd/manhunt",
+      "boardDirectory": "/Users/johnwink/Herd/manhunt/.board/team-2-gps-tracking",
+      "modelPreference": "claude-sonnet-4-5",
+      "temperature": 0.3
+    },
+    {
+      "id": "team-2-backend-3",
+      "team": 2,
+      "name": "Team 2 Anomaly Detection Developer",
+      "role": "ML Engineer",
+      "expertise": [
+        "Anomaly Detection",
+        "Pattern Recognition",
+        "Data Analysis",
+        "Machine Learning"
+      ],
+      "capabilities": {
+        "codeGeneration": true,
+        "codeReview": false,
+        "architectureDesign": false,
+        "testing": true,
+        "documentation": true
+      },
+      "maxConcurrentTasks": 2,
+      "sprintCapacity": 20,
+      "reportsTo": "team-2-lead",
+      "workingDirectory": "/Users/johnwink/Herd/manhunt",
+      "boardDirectory": "/Users/johnwink/Herd/manhunt/.board/team-2-gps-tracking",
+      "modelPreference": "claude-opus-4",
+      "temperature": 0.2
+    },
+    {
+      "id": "team-2-junior",
+      "team": 2,
+      "name": "Team 2 Junior Developer",
+      "role": "Junior Developer",
+      "expertise": [
+        "Testing",
+        "Data Validation",
+        "Documentation"
+      ],
+      "capabilities": {
+        "codeGeneration": true,
+        "codeReview": false,
+        "architectureDesign": false,
+        "testing": true,
+        "documentation": true
+      },
+      "maxConcurrentTasks": 1,
+      "sprintCapacity": 15,
+      "reportsTo": "team-2-lead",
+      "workingDirectory": "/Users/johnwink/Herd/manhunt",
+      "boardDirectory": "/Users/johnwink/Herd/manhunt/.board/team-2-gps-tracking",
+      "modelPreference": "claude-haiku-4",
+      "temperature": 0.5
+    },
+    {
+      "id": "team-3-lead",
+      "team": 3,
+      "name": "Team 3 Lead Agent",
+      "role": "Senior Frontend Developer (Maps)",
+      "expertise": [
+        "Mapbox GL JS",
+        "Leaflet.js",
+        "Geospatial Visualization",
+        "JavaScript"
+      ],
+      "capabilities": {
+        "codeGeneration": true,
+        "codeReview": true,
+        "architectureDesign": true,
+        "testing": true,
+        "documentation": true
+      },
+      "maxConcurrentTasks": 3,
+      "sprintCapacity": 25,
+      "workingDirectory": "/Users/johnwink/Herd/manhunt",
+      "boardDirectory": "/Users/johnwink/Herd/manhunt/.board/team-3-maps-zones",
+      "modelPreference": "claude-sonnet-4-5",
+      "temperature": 0.3
+    },
+    {
+      "id": "team-3-frontend-1",
+      "team": 3,
+      "name": "Team 3 Frontend Developer 1",
+      "role": "Frontend Developer",
+      "expertise": [
+        "React",
+        "JavaScript",
+        "Tailwind CSS",
+        "Interactive Maps"
+      ],
+      "capabilities": {
+        "codeGeneration": true,
+        "codeReview": false,
+        "architectureDesign": false,
+        "testing": true,
+        "documentation": true
+      },
+      "maxConcurrentTasks": 2,
+      "sprintCapacity": 20,
+      "reportsTo": "team-3-lead",
+      "workingDirectory": "/Users/johnwink/Herd/manhunt",
+      "boardDirectory": "/Users/johnwink/Herd/manhunt/.board/team-3-maps-zones",
+      "modelPreference": "claude-sonnet-4-5",
+      "temperature": 0.4
+    },
+    {
+      "id": "team-3-backend-1",
+      "team": 3,
+      "name": "Team 3 Backend Developer 1",
+      "role": "Backend Developer (Zones)",
+      "expertise": [
+        "Zone Management",
+        "Geofencing",
+        "API Development",
+        "Laravel"
+      ],
+      "capabilities": {
+        "codeGeneration": true,
+        "codeReview": false,
+        "architectureDesign": false,
+        "testing": true,
+        "documentation": true
+      },
+      "maxConcurrentTasks": 2,
+      "sprintCapacity": 20,
+      "reportsTo": "team-3-lead",
+      "workingDirectory": "/Users/johnwink/Herd/manhunt",
+      "boardDirectory": "/Users/johnwink/Herd/manhunt/.board/team-3-maps-zones",
+      "modelPreference": "claude-sonnet-4-5",
+      "temperature": 0.4
+    },
+    {
+      "id": "team-3-junior",
+      "team": 3,
+      "name": "Team 3 Junior Developer",
+      "role": "Junior Developer",
+      "expertise": [
+        "Testing",
+        "UI Components",
+        "Documentation"
+      ],
+      "capabilities": {
+        "codeGeneration": true,
+        "codeReview": false,
+        "architectureDesign": false,
+        "testing": true,
+        "documentation": true
+      },
+      "maxConcurrentTasks": 1,
+      "sprintCapacity": 15,
+      "reportsTo": "team-3-lead",
+      "workingDirectory": "/Users/johnwink/Herd/manhunt",
+      "boardDirectory": "/Users/johnwink/Herd/manhunt/.board/team-3-maps-zones",
+      "modelPreference": "claude-haiku-4",
+      "temperature": 0.5
+    },
+    {
+      "id": "team-4-lead",
+      "team": 4,
+      "name": "Team 4 Lead Agent",
+      "role": "Senior Backend Developer (Game Logic)",
+      "expertise": [
+        "Game State Machines",
+        "Event Systems",
+        "Business Logic",
+        "Laravel"
+      ],
+      "capabilities": {
+        "codeGeneration": true,
+        "codeReview": true,
+        "architectureDesign": true,
+        "testing": true,
+        "documentation": true
+      },
+      "maxConcurrentTasks": 3,
+      "sprintCapacity": 25,
+      "workingDirectory": "/Users/johnwink/Herd/manhunt",
+      "boardDirectory": "/Users/johnwink/Herd/manhunt/.board/team-4-game-logic",
+      "modelPreference": "claude-sonnet-4-5",
+      "temperature": 0.3
+    },
+    {
+      "id": "team-4-backend-1",
+      "team": 4,
+      "name": "Team 4 Backend Developer 1",
+      "role": "Backend Developer (Events)",
+      "expertise": [
+        "Event System",
+        "Event Detection",
+        "Notifications",
+        "Laravel Events"
+      ],
+      "capabilities": {
+        "codeGeneration": true,
+        "codeReview": false,
+        "architectureDesign": false,
+        "testing": true,
+        "documentation": true
+      },
+      "maxConcurrentTasks": 2,
+      "sprintCapacity": 20,
+      "reportsTo": "team-4-lead",
+      "workingDirectory": "/Users/johnwink/Herd/manhunt",
+      "boardDirectory": "/Users/johnwink/Herd/manhunt/.board/team-4-game-logic",
+      "modelPreference": "claude-sonnet-4-5",
+      "temperature": 0.4
+    },
+    {
+      "id": "team-4-backend-2",
+      "team": 4,
+      "name": "Team 4 Backend Developer 2",
+      "role": "Backend Developer (Jokers)",
+      "expertise": [
+        "Joker System",
+        "Game Mechanics",
+        "Business Rules",
+        "Laravel"
+      ],
+      "capabilities": {
+        "codeGeneration": true,
+        "codeReview": false,
+        "architectureDesign": false,
+        "testing": true,
+        "documentation": true
+      },
+      "maxConcurrentTasks": 2,
+      "sprintCapacity": 20,
+      "reportsTo": "team-4-lead",
+      "workingDirectory": "/Users/johnwink/Herd/manhunt",
+      "boardDirectory": "/Users/johnwink/Herd/manhunt/.board/team-4-game-logic",
+      "modelPreference": "claude-sonnet-4-5",
+      "temperature": 0.4
+    },
+    {
+      "id": "team-4-backend-3",
+      "team": 4,
+      "name": "Team 4 Backend Developer 3",
+      "role": "Backend Developer (Challenges)",
+      "expertise": [
+        "Challenge System",
+        "Gamification",
+        "Achievements",
+        "Laravel"
+      ],
+      "capabilities": {
+        "codeGeneration": true,
+        "codeReview": false,
+        "architectureDesign": false,
+        "testing": true,
+        "documentation": true
+      },
+      "maxConcurrentTasks": 2,
+      "sprintCapacity": 20,
+      "reportsTo": "team-4-lead",
+      "workingDirectory": "/Users/johnwink/Herd/manhunt",
+      "boardDirectory": "/Users/johnwink/Herd/manhunt/.board/team-4-game-logic",
+      "modelPreference": "claude-sonnet-4-5",
+      "temperature": 0.4
+    },
+    {
+      "id": "team-4-junior",
+      "team": 4,
+      "name": "Team 4 Junior Developer",
+      "role": "Junior Developer",
+      "expertise": [
+        "Testing",
+        "Documentation",
+        "Bug Fixes"
+      ],
+      "capabilities": {
+        "codeGeneration": true,
+        "codeReview": false,
+        "architectureDesign": false,
+        "testing": true,
+        "documentation": true
+      },
+      "maxConcurrentTasks": 1,
+      "sprintCapacity": 15,
+      "reportsTo": "team-4-lead",
+      "workingDirectory": "/Users/johnwink/Herd/manhunt",
+      "boardDirectory": "/Users/johnwink/Herd/manhunt/.board/team-4-game-logic",
+      "modelPreference": "claude-haiku-4",
+      "temperature": 0.5
+    },
+    {
+      "id": "team-5-lead",
+      "team": 5,
+      "name": "Team 5 Lead Agent",
+      "role": "Senior Full-Stack Developer (Real-time)",
+      "expertise": [
+        "WebSockets",
+        "Laravel Reverb",
+        "Livewire",
+        "Real-time Communication"
+      ],
+      "capabilities": {
+        "codeGeneration": true,
+        "codeReview": true,
+        "architectureDesign": true,
+        "testing": true,
+        "documentation": true
+      },
+      "maxConcurrentTasks": 3,
+      "sprintCapacity": 25,
+      "workingDirectory": "/Users/johnwink/Herd/manhunt",
+      "boardDirectory": "/Users/johnwink/Herd/manhunt/.board/team-5-realtime",
+      "modelPreference": "claude-sonnet-4-5",
+      "temperature": 0.3
+    },
+    {
+      "id": "team-5-backend-1",
+      "team": 5,
+      "name": "Team 5 Backend Developer 1",
+      "role": "Backend Developer (Chat)",
+      "expertise": [
+        "Chat System",
+        "WebSockets",
+        "Laravel Broadcasting",
+        "Redis"
+      ],
+      "capabilities": {
+        "codeGeneration": true,
+        "codeReview": false,
+        "architectureDesign": false,
+        "testing": true,
+        "documentation": true
+      },
+      "maxConcurrentTasks": 2,
+      "sprintCapacity": 20,
+      "reportsTo": "team-5-lead",
+      "workingDirectory": "/Users/johnwink/Herd/manhunt",
+      "boardDirectory": "/Users/johnwink/Herd/manhunt/.board/team-5-realtime",
+      "modelPreference": "claude-sonnet-4-5",
+      "temperature": 0.4
+    },
+    {
+      "id": "team-5-frontend-1",
+      "team": 5,
+      "name": "Team 5 Frontend Developer 1",
+      "role": "Frontend Developer (Livewire)",
+      "expertise": [
+        "Livewire",
+        "Alpine.js",
+        "Real-time UI",
+        "JavaScript"
+      ],
+      "capabilities": {
+        "codeGeneration": true,
+        "codeReview": false,
+        "architectureDesign": false,
+        "testing": true,
+        "documentation": true
+      },
+      "maxConcurrentTasks": 2,
+      "sprintCapacity": 20,
+      "reportsTo": "team-5-lead",
+      "workingDirectory": "/Users/johnwink/Herd/manhunt",
+      "boardDirectory": "/Users/johnwink/Herd/manhunt/.board/team-5-realtime",
+      "modelPreference": "claude-sonnet-4-5",
+      "temperature": 0.4
+    },
+    {
+      "id": "team-5-junior",
+      "team": 5,
+      "name": "Team 5 Junior Developer",
+      "role": "Junior Developer",
+      "expertise": [
+        "Testing",
+        "Push Notifications",
+        "Documentation"
+      ],
+      "capabilities": {
+        "codeGeneration": true,
+        "codeReview": false,
+        "architectureDesign": false,
+        "testing": true,
+        "documentation": true
+      },
+      "maxConcurrentTasks": 1,
+      "sprintCapacity": 15,
+      "reportsTo": "team-5-lead",
+      "workingDirectory": "/Users/johnwink/Herd/manhunt",
+      "boardDirectory": "/Users/johnwink/Herd/manhunt/.board/team-5-realtime",
+      "modelPreference": "claude-haiku-4",
+      "temperature": 0.5
+    },
+    {
+      "id": "team-6-lead",
+      "team": 6,
+      "name": "Team 6 Lead Agent",
+      "role": "Senior Backend Developer (Integrations)",
+      "expertise": [
+        "API Integration",
+        "Banking APIs",
+        "Video Processing",
+        "Webhooks"
+      ],
+      "capabilities": {
+        "codeGeneration": true,
+        "codeReview": true,
+        "architectureDesign": true,
+        "testing": true,
+        "documentation": true
+      },
+      "maxConcurrentTasks": 3,
+      "sprintCapacity": 25,
+      "workingDirectory": "/Users/johnwink/Herd/manhunt",
+      "boardDirectory": "/Users/johnwink/Herd/manhunt/.board/team-6-integrations",
+      "modelPreference": "claude-sonnet-4-5",
+      "temperature": 0.3
+    },
+    {
+      "id": "team-6-backend-1",
+      "team": 6,
+      "name": "Team 6 Backend Developer 1",
+      "role": "Backend Developer (Banking)",
+      "expertise": [
+        "Revolut API",
+        "Bunq API",
+        "Payment Processing",
+        "Transactions"
+      ],
+      "capabilities": {
+        "codeGeneration": true,
+        "codeReview": false,
+        "architectureDesign": false,
+        "testing": true,
+        "documentation": true
+      },
+      "maxConcurrentTasks": 2,
+      "sprintCapacity": 20,
+      "reportsTo": "team-6-lead",
+      "workingDirectory": "/Users/johnwink/Herd/manhunt",
+      "boardDirectory": "/Users/johnwink/Herd/manhunt/.board/team-6-integrations",
+      "modelPreference": "claude-sonnet-4-5",
+      "temperature": 0.4
+    },
+    {
+      "id": "team-6-backend-2",
+      "team": 6,
+      "name": "Team 6 Backend Developer 2",
+      "role": "Backend Developer (Video)",
+      "expertise": [
+        "S3 Upload",
+        "Video Transcoding",
+        "AWS MediaConvert",
+        "Chunked Upload"
+      ],
+      "capabilities": {
+        "codeGeneration": true,
+        "codeReview": false,
+        "architectureDesign": false,
+        "testing": true,
+        "documentation": true
+      },
+      "maxConcurrentTasks": 2,
+      "sprintCapacity": 20,
+      "reportsTo": "team-6-lead",
+      "workingDirectory": "/Users/johnwink/Herd/manhunt",
+      "boardDirectory": "/Users/johnwink/Herd/manhunt/.board/team-6-integrations",
+      "modelPreference": "claude-sonnet-4-5",
+      "temperature": 0.4
+    },
+    {
+      "id": "team-6-backend-3",
+      "team": 6,
+      "name": "Team 6 Backend Developer 3",
+      "role": "Backend Developer (Streaming)",
+      "expertise": [
+        "YouTube API",
+        "Twitch API",
+        "Live Streaming",
+        "RTMP"
+      ],
+      "capabilities": {
+        "codeGeneration": true,
+        "codeReview": false,
+        "architectureDesign": false,
+        "testing": true,
+        "documentation": true
+      },
+      "maxConcurrentTasks": 2,
+      "sprintCapacity": 20,
+      "reportsTo": "team-6-lead",
+      "workingDirectory": "/Users/johnwink/Herd/manhunt",
+      "boardDirectory": "/Users/johnwink/Herd/manhunt/.board/team-6-integrations",
+      "modelPreference": "claude-sonnet-4-5",
+      "temperature": 0.4
+    },
+    {
+      "id": "team-7-lead",
+      "team": 7,
+      "name": "Team 7 Lead Agent",
+      "role": "Senior DevOps Engineer",
+      "expertise": [
+        "AWS",
+        "Terraform",
+        "CI/CD",
+        "Docker"
+      ],
+      "capabilities": {
+        "codeGeneration": true,
+        "codeReview": true,
+        "architectureDesign": true,
+        "testing": true,
+        "documentation": true
+      },
+      "maxConcurrentTasks": 3,
+      "sprintCapacity": 25,
+      "workingDirectory": "/Users/johnwink/Herd/manhunt",
+      "boardDirectory": "/Users/johnwink/Herd/manhunt/.board/team-7-devops",
+      "modelPreference": "claude-sonnet-4-5",
+      "temperature": 0.2
+    },
+    {
+      "id": "team-7-devops-1",
+      "team": 7,
+      "name": "Team 7 DevOps Engineer 1",
+      "role": "DevOps Engineer",
+      "expertise": [
+        "AWS Lambda",
+        "RDS",
+        "S3",
+        "CloudFront"
+      ],
+      "capabilities": {
+        "codeGeneration": true,
+        "codeReview": false,
+        "architectureDesign": false,
+        "testing": true,
+        "documentation": true
+      },
+      "maxConcurrentTasks": 2,
+      "sprintCapacity": 20,
+      "reportsTo": "team-7-lead",
+      "workingDirectory": "/Users/johnwink/Herd/manhunt",
+      "boardDirectory": "/Users/johnwink/Herd/manhunt/.board/team-7-devops",
+      "modelPreference": "claude-sonnet-4-5",
+      "temperature": 0.3
+    },
+    {
+      "id": "team-7-devops-2",
+      "team": 7,
+      "name": "Team 7 DevOps Engineer 2",
+      "role": "DevOps Engineer (CI/CD)",
+      "expertise": [
+        "GitHub Actions",
+        "Docker",
+        "Monitoring",
+        "Logging"
+      ],
+      "capabilities": {
+        "codeGeneration": true,
+        "codeReview": false,
+        "architectureDesign": false,
+        "testing": true,
+        "documentation": true
+      },
+      "maxConcurrentTasks": 2,
+      "sprintCapacity": 20,
+      "reportsTo": "team-7-lead",
+      "workingDirectory": "/Users/johnwink/Herd/manhunt",
+      "boardDirectory": "/Users/johnwink/Herd/manhunt/.board/team-7-devops",
+      "modelPreference": "claude-sonnet-4-5",
+      "temperature": 0.3
+    },
+    {
+      "id": "team-8-lead",
+      "team": 8,
+      "name": "Team 8 Lead Agent",
+      "role": "Senior QA Engineer",
+      "expertise": [
+        "Test Automation",
+        "Pest",
+        "Quality Assurance",
+        "E2E Testing"
+      ],
+      "capabilities": {
+        "codeGeneration": true,
+        "codeReview": true,
+        "architectureDesign": false,
+        "testing": true,
+        "documentation": true
+      },
+      "maxConcurrentTasks": 5,
+      "sprintCapacity": 30,
+      "workingDirectory": "/Users/johnwink/Herd/manhunt",
+      "boardDirectory": "/Users/johnwink/Herd/manhunt/.board/team-8-qa",
+      "modelPreference": "claude-sonnet-4-5",
+      "temperature": 0.2
+    },
+    {
+      "id": "team-8-qa-1",
+      "team": 8,
+      "name": "Team 8 QA Engineer 1",
+      "role": "QA Engineer",
+      "expertise": [
+        "Manual Testing",
+        "Test Cases",
+        "Bug Reporting",
+        "Regression Testing"
+      ],
+      "capabilities": {
+        "codeGeneration": true,
+        "codeReview": false,
+        "architectureDesign": false,
+        "testing": true,
+        "documentation": true
+      },
+      "maxConcurrentTasks": 3,
+      "sprintCapacity": 20,
+      "reportsTo": "team-8-lead",
+      "workingDirectory": "/Users/johnwink/Herd/manhunt",
+      "boardDirectory": "/Users/johnwink/Herd/manhunt/.board/team-8-qa",
+      "modelPreference": "claude-sonnet-4-5",
+      "temperature": 0.3
+    },
+    {
+      "id": "team-8-qa-2",
+      "team": 8,
+      "name": "Team 8 QA Engineer 2",
+      "role": "QA Automation Engineer",
+      "expertise": [
+        "Pest Browser Testing",
+        "Test Automation",
+        "CI/CD Testing",
+        "Performance Testing"
+      ],
+      "capabilities": {
+        "codeGeneration": true,
+        "codeReview": false,
+        "architectureDesign": false,
+        "testing": true,
+        "documentation": true
+      },
+      "maxConcurrentTasks": 3,
+      "sprintCapacity": 20,
+      "reportsTo": "team-8-lead",
+      "workingDirectory": "/Users/johnwink/Herd/manhunt",
+      "boardDirectory": "/Users/johnwink/Herd/manhunt/.board/team-8-qa",
+      "modelPreference": "claude-sonnet-4-5",
+      "temperature": 0.3
+    },
+    {
+      "id": "team-9-lead",
+      "team": 9,
+      "name": "Team 9 Lead Designer",
+      "role": "Senior UI/UX Designer",
+      "expertise": [
+        "UI/UX Design",
+        "Design Systems",
+        "Figma",
+        "User Research"
+      ],
+      "capabilities": {
+        "codeGeneration": false,
+        "codeReview": false,
+        "architectureDesign": true,
+        "testing": false,
+        "documentation": true
+      },
+      "maxConcurrentTasks": 3,
+      "sprintCapacity": 20,
+      "workingDirectory": "/Users/johnwink/Herd/manhunt",
+      "boardDirectory": "/Users/johnwink/Herd/manhunt/.board/team-9-design",
+      "modelPreference": "claude-sonnet-4-5",
+      "temperature": 0.4
+    },
+    {
+      "id": "team-9-designer-1",
+      "team": 9,
+      "name": "Team 9 UI Designer",
+      "role": "UI Designer",
+      "expertise": [
+        "Component Design",
+        "Tailwind CSS",
+        "Design Tokens",
+        "Responsive Design"
+      ],
+      "capabilities": {
+        "codeGeneration": true,
+        "codeReview": false,
+        "architectureDesign": false,
+        "testing": false,
+        "documentation": true
+      },
+      "maxConcurrentTasks": 2,
+      "sprintCapacity": 15,
+      "reportsTo": "team-9-lead",
+      "workingDirectory": "/Users/johnwink/Herd/manhunt",
+      "boardDirectory": "/Users/johnwink/Herd/manhunt/.board/team-9-design",
+      "modelPreference": "claude-sonnet-4-5",
+      "temperature": 0.4
     },
     {
       "id": "code-review-agent",
