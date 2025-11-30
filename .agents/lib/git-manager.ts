@@ -184,12 +184,12 @@ Task: ${taskId}
   }
 
   /**
-   * Merge task branch back to main
+   * Merge task branch back to gitbutler/workspace
    */
   async mergeToMain(branchName: string, taskId: string): Promise<void> {
     try {
-      // Switch to main
-      await this.ensureMainBranch();
+      // Switch to gitbutler/workspace
+      await this.executeGit('checkout gitbutler/workspace');
 
       // Pull latest
       await this.pull();
@@ -197,7 +197,11 @@ Task: ${taskId}
       // Merge branch
       await this.executeGit(`merge --no-ff ${branchName} -m "Merge ${taskId}: ${branchName}"`);
 
-      console.log(`✓ Merged ${branchName} to main`);
+      console.log(`✓ Merged ${branchName} to gitbutler/workspace`);
+
+      // Push to origin
+      await this.executeGit('push origin gitbutler/workspace');
+      console.log(`✓ Pushed gitbutler/workspace to origin`);
 
       // Delete branch (force delete to handle all cases)
       await this.executeGit(`branch -D ${branchName}`);

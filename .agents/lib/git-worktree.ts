@@ -260,7 +260,7 @@ export class GitWorktreeManager {
     }
   }
 
-  async mergeBranch(agentId: string, targetBranch: string = 'main'): Promise<void> {
+  async mergeBranch(agentId: string, targetBranch: string = 'gitbutler/workspace'): Promise<void> {
     const worktreePath = this.worktrees.get(agentId);
 
     if (!worktreePath) {
@@ -286,6 +286,20 @@ export class GitWorktreeManager {
       });
 
       console.log(chalk.green(`✓ Merged ${agentId}'s branch into ${targetBranch}`));
+
+      // Push to origin after successful merge
+      try {
+        await execAsync(`git push origin ${targetBranch}`, {
+          cwd: this.projectRoot,
+        });
+        console.log(chalk.green(`✓ Pushed ${targetBranch} to origin`));
+      } catch (pushError) {
+        console.log(
+          chalk.yellow(
+            `⚠️  Could not push to origin: ${pushError instanceof Error ? pushError.message : 'Unknown error'}`
+          )
+        );
+      }
 
       // Delete the agent's branch after successful merge
       try {
