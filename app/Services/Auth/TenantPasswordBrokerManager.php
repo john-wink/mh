@@ -20,7 +20,7 @@ final class TenantPasswordBrokerManager extends PasswordBrokerManager
     /**
      * Resolve the given broker.
      */
-    protected function resolve(?string $name = null): PasswordBroker
+    protected function resolve($name = null): PasswordBroker
     {
         $name = $name ?: $this->getDefaultDriver();
 
@@ -63,7 +63,7 @@ final class TenantPasswordBrokerManager extends PasswordBrokerManager
             /**
              * Build the record payload for the table with tenant support.
              */
-            protected function getPayload(string $email, string $token, $user): array
+            protected function getPayload($email, $token, $user = null): array
             {
                 return [
                     'organization_id' => $user->organization_id,
@@ -76,7 +76,7 @@ final class TenantPasswordBrokerManager extends PasswordBrokerManager
             /**
              * Determine if a token record exists and is valid with tenant support.
              */
-            public function exists($user, string $token): bool
+            public function exists($user, $token): bool
             {
                 $record = (array) $this->getTable()
                     ->where('organization_id', $user->organization_id)

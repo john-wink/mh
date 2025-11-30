@@ -228,7 +228,7 @@ export class Agent {
   }
 
   private buildSystemPrompt(): string {
-    return `You are ${this.name}, a ${this.role} working on the Manhunt SaaS Platform.
+    return `You are ${this.name}, a ${this.role} working on the BountyOps SaaS Platform.
 
 Your expertise includes: ${this.expertise.join(', ')}.
 

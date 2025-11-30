@@ -51,7 +51,7 @@ Eine universelle Plattform zu schaffen, die es jedem ermöglicht, professionelle
 
 ### Hauptziele
 
-1. **Vollständige Spielverwaltung**: Alle Aspekte eines Manhunt-Spiels in einer Plattform
+1. **Vollständige Spielverwaltung**: Alle Aspekte eines BountyOps-Spiels in einer Plattform
 2. **Production-Excellence**: Tools für professionelle Video-Produktion und Live-Streaming  
 3. **Flexibilität**: Anpassbar an verschiedene Spielformate und Regelwerke
 4. **Sicherheit**: Umfassende Sicherheits- und Notfall-Features
@@ -86,7 +86,7 @@ Eine universelle Plattform zu schaffen, die es jedem ermöglicht, professionelle
 
 1. **Super-Admin**: Plattform-weite Verwaltung, Support, Eingriffsmöglichkeiten
 2. **Organisation**: Isolierte Tenant mit eigenen Benutzern, Spielen, Einstellungen
-3. **Spiel**: Einzelne Manhunt-Events mit spezifischen Regeln und Teilnehmern
+3. **Spiel**: Einzelne BountyOps-Events mit spezifischen Regeln und Teilnehmern
 4. **Benutzer**: Personen mit Rollen innerhalb von Spielen
 
 ### Daten-Isolation
@@ -352,7 +352,7 @@ Eine universelle Plattform zu schaffen, die es jedem ermöglicht, professionelle
 
 ### Spielflow & Phasen
 
-Ein Manhunt-Spiel durchläuft mehrere definierte Phasen:
+Ein BountyOps-Spiel durchläuft mehrere definierte Phasen:
 
 #### Phase 1: Setup (Vorbereitung)
 **Dauer**: Variabel (Tage/Wochen vor Start)

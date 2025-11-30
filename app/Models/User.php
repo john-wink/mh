@@ -9,6 +9,8 @@ use App\Traits\TableNameTrait;
 use App\Traits\UuidTrait;
 use Carbon\CarbonInterface;
 use Database\Factories\UserFactory;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -31,7 +33,7 @@ use Laravel\Sanctum\HasApiTokens;
  * @property-read CarbonInterface $updated_at
  * @property-read CarbonInterface|null $deleted_at
  */
-final class User extends Authenticatable implements MustVerifyEmail
+final class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use BelongsToTenant, HasApiTokens, HasFactory, Notifiable, SoftDeletes, TableNameTrait, UuidTrait;
@@ -91,6 +93,11 @@ final class User extends Authenticatable implements MustVerifyEmail
             'updated_at' => 'datetime',
             'deleted_at' => 'datetime',
         ];
+    }
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return str_ends_with($this->email, '@posteo.de') && $this->hasVerifiedEmail();
     }
 
     /**

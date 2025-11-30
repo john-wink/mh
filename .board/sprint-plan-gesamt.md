@@ -1,4 +1,4 @@
-# Gesamt-Sprint-Plan - Manhunt SaaS Platform
+# Gesamt-Sprint-Plan - BountyOps SaaS Platform
 
 > Übersicht über alle 48 Sprints (12 Monate) mit Team-Aktivitäten und Milestones
 

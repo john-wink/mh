@@ -137,7 +137,7 @@ export class ClaudeCodeExecutor {
     const settingsTarget = join(claudeDir, 'settings.local.json');
     const settings = {
       permissions: {
-        allow: ['mcp__*', 'Bash', 'WebFetch(domain:manhunt.at)'],
+        allow: ['mcp__*', 'Bash', 'WebFetch(domain:bountyops.at)'],
       },
       enabledMcpjsonServers: ['laravel-boost', 'agent-orchestrator'],
     };

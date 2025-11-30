@@ -10,8 +10,8 @@ import { Monitor } from '../runtime/monitoring.js';
 const program = new Command();
 
 program
-  .name('manhunt-orchestrator')
-  .description('Multi-Agent Development Orchestrator for Manhunt SaaS')
+  .name('bountyops-orchestrator')
+  .description('Multi-Agent Development Orchestrator for BountyOps SaaS')
   .version('1.0.0');
 
 program
@@ -20,7 +20,7 @@ program
   .option('-s, --sprint <number>', 'Sprint number to execute', '1')
   .option('-d, --dry-run', 'Simulate without actually spawning agents', false)
   .action(async (options) => {
-    console.log(chalk.blue.bold('\n🚀 Manhunt Agent Orchestrator\n'));
+    console.log(chalk.blue.bold('\n🚀 BountyOps Agent Orchestrator\n'));
 
     try {
       const config = await loadConfig();

@@ -110,7 +110,7 @@ Team 9 (Design)
 - `#team-9-design`
 
 ### Cross-Team
-- `#manhunt-dev` (General)
+- `#bountyops-dev` (General)
 - `#architecture` (Architektur-Fragen)
 - `#bugs` (Bug-Reports)
 - `#releases` (Release-Notes)

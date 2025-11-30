@@ -35,14 +35,16 @@ it('can request a password reset for a user within their organization', function
 });
 
 it('scopes password reset tokens to organization', function (): void {
+    Notification::fake();
+
     $organization1 = Organization::factory()->create();
     $organization2 = Organization::factory()->create();
 
     $user1 = User::factory()->for($organization1)->create([
-        'email' => 'user@example.com',
+        'email' => 'user1@example.com',
     ]);
     $user2 = User::factory()->for($organization2)->create([
-        'email' => 'user@example.com',
+        'email' => 'user2@example.com',
     ]);
 
     Password::sendResetLink(['email' => $user1->email]);

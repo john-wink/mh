@@ -3,7 +3,7 @@
         "laravel-boost": {
             "command": "/Users/johnwink/Library/Application Support/Herd/bin/php84",
             "args": [
-                "/Users/johnwink/Herd/manhunt/artisan",
+                "/Users/johnwink/Herd/bountyops/artisan",
                 "boost:mcp"
             ]
         },
@@ -13,7 +13,7 @@
                 "/Applications/Herd.app/Contents/Resources/herd-mcp.phar"
             ],
             "env": {
-                "SITE_PATH": "/Users/johnwink/Herd/manhunt"
+                "SITE_PATH": "/Users/johnwink/Herd/bountyops"
             }
         }
     }

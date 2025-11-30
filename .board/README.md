@@ -1,4 +1,4 @@
-# Manhunt SaaS Platform - Development Board
+# BountyOps SaaS Platform - Development Board
 
 > Zentrale Übersicht über alle Entwicklungs-Teams, Sprint-Pläne und Task-Verteilung
 
@@ -96,7 +96,7 @@ Team 5 (Realtime)
 ## Kommunikations-Kanäle
 
 ### Daily
-- **Slack**: `#manhunt-dev` (General)
+- **Slack**: `#bountyops-dev` (General)
 - **Team-Channels**: `#team-1-core`, `#team-2-gps`, etc.
 
 ### Wöchentlich

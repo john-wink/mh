@@ -6,10 +6,10 @@
         "run",
         "mcp-server"
       ],
-      "cwd": "/Users/johnwink/Herd/manhunt/.agents",
+      "cwd": "/Users/johnwink/Herd/bountyops/.agents",
       "env": {
-        "BOARD_DIRECTORY": "/Users/johnwink/Herd/manhunt/.board/tasks",
-        "AGENT_ID": "/Users/johnwink/Herd/manhunt/.worktrees/team-1-lead"
+        "BOARD_DIRECTORY": "/Users/johnwink/Herd/bountyops/.board/tasks",
+        "AGENT_ID": ""
       }
     }
   }

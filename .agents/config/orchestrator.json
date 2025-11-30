@@ -4,9 +4,9 @@
     "version": "1.0.0",
     "currentSprint": 1,
     "sprintDuration": "1 week",
-    "projectRoot": "/Users/johnwink/Herd/manhunt",
-    "boardDirectory": "/Users/johnwink/Herd/manhunt/.board",
-    "agentDirectory": "/Users/johnwink/Herd/manhunt/.agents"
+    "projectRoot": "/Users/johnwink/Herd/bountyops",
+    "boardDirectory": "/Users/johnwink/Herd/bountyops/.board",
+    "agentDirectory": "/Users/johnwink/Herd/bountyops/.agents"
   },
   "settings": {
     "maxConcurrentAgents": 28,
@@ -43,8 +43,8 @@
   },
   "collaboration": {
     "communicationProtocol": "mcp",
-    "sharedKnowledgeBase": "/Users/johnwink/Herd/manhunt/.board",
-    "codeRepository": "/Users/johnwink/Herd/manhunt"
+    "sharedKnowledgeBase": "/Users/johnwink/Herd/bountyops/.board",
+    "codeRepository": "/Users/johnwink/Herd/bountyops"
   },
   "git": {
     "enabled": true,
@@ -76,7 +76,7 @@
   "costs": {
     "tracking": {
       "enabled": true,
-      "storageDirectory": "/Users/johnwink/Herd/manhunt/.agents/data",
+      "storageDirectory": "/Users/johnwink/Herd/bountyops/.agents/data",
       "showInDashboard": true,
       "alertOnHighCost": true,
       "highCostThreshold": 1.0

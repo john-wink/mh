@@ -84,7 +84,7 @@ npm run dashboard
   "costs": {
     "tracking": {
       "enabled": true,
-      "storageDirectory": "/Users/johnwink/Herd/manhunt/.agents/data",
+      "storageDirectory": "/Users/johnwink/Herd/bountyops/.agents/data",
       "showInDashboard": true,
       "alertOnHighCost": true,
       "highCostThreshold": 1.0
@@ -234,7 +234,7 @@ curl http://localhost:3000/api/costs
 
 Cost tracking data is stored in:
 ```
-/Users/johnwink/Herd/manhunt/.agents/data/cost-tracking.json
+/Users/johnwink/Herd/bountyops/.agents/data/cost-tracking.json
 ```
 
 **Data Format:**
@@ -452,7 +452,7 @@ The cost management system provides:
 ✅ **Automatic alerts** when approaching limits
 ✅ **Persistent storage** of cost history
 
-**Expected Costs for Manhunt MVP:**
+**Expected Costs for BountyOps MVP:**
 - Without optimization: $200-300
 - With prompt caching: $30-50
 - **Savings: ~85% reduction** 🎉

@@ -14,9 +14,8 @@ final class AuthServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->singleton('auth.password', function ($app): TenantPasswordBrokerManager {
-            return new TenantPasswordBrokerManager($app);
-        });
+        // Register tenant-aware password broker manager
+        $this->app->extend('auth.password', fn (): TenantPasswordBrokerManager => new TenantPasswordBrokerManager($this->app));
     }
 
     /**
