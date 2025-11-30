@@ -74,6 +74,68 @@ const OrchestratorConfigSchema = z.object({
     sharedKnowledgeBase: z.string(),
     codeRepository: z.string(),
   }),
+  git: z.object({
+    enabled: z.boolean(),
+    branchPerAgent: z.boolean(),
+    autoCommit: z.boolean(),
+    commitFrequency: z.string(),
+    testBeforeCommit: z.boolean(),
+    testCommand: z.string(),
+    autoMerge: z.boolean(),
+    requireCodeReview: z.boolean(),
+    branchNaming: z.string(),
+    checkpoints: z.object({
+      enabled: z.boolean(),
+      createBeforeTask: z.boolean(),
+      createAfterTask: z.boolean(),
+      createOnTestFailure: z.boolean(),
+    }),
+    rollback: z.object({
+      enabled: z.boolean(),
+      autoRollbackOnTestFailure: z.boolean(),
+      autoRollbackOnError: z.boolean(),
+    }),
+    push: z.object({
+      enabled: z.boolean(),
+      pushToRemote: z.boolean(),
+      requirePullRequest: z.boolean(),
+    }),
+  }).optional(),
+  costs: z.object({
+    tracking: z.object({
+      enabled: z.boolean(),
+      storageDirectory: z.string(),
+      showInDashboard: z.boolean(),
+      alertOnHighCost: z.boolean(),
+      highCostThreshold: z.number(),
+    }),
+    caching: z.object({
+      enabled: z.boolean(),
+      cacheSystemPrompts: z.boolean(),
+      cacheContextFiles: z.boolean(),
+    }),
+    limits: z.object({
+      daily: z.number(),
+      weekly: z.number(),
+      monthly: z.number(),
+      perTask: z.number(),
+      perAgent: z.number(),
+      total: z.number(),
+    }),
+    alerts: z.object({
+      enabled: z.boolean(),
+      notifyAt: z.array(z.number()),
+      stopAtLimit: z.boolean(),
+      email: z.string(),
+      slack: z.string(),
+    }),
+    optimization: z.object({
+      preferCheaperModels: z.boolean(),
+      autoSwitchToHaiku: z.boolean(),
+      batchRequests: z.boolean(),
+      maxConcurrentRequests: z.number(),
+    }),
+  }).optional(),
 });
 
 const AgentsConfigSchema = z.object({
@@ -89,6 +151,8 @@ export interface Config {
   settings: OrchestratorConfig['settings'];
   monitoring: OrchestratorConfig['monitoring'];
   collaboration: OrchestratorConfig['collaboration'];
+  git?: OrchestratorConfig['git'];
+  costs?: OrchestratorConfig['costs'];
   agents: Agent[];
 }
 
@@ -116,6 +180,8 @@ export async function loadConfig(): Promise<Config> {
     settings: orchestratorConfig.settings,
     monitoring: orchestratorConfig.monitoring,
     collaboration: orchestratorConfig.collaboration,
+    git: orchestratorConfig.git,
+    costs: orchestratorConfig.costs,
     agents: agentsConfig.agents,
   };
 }

@@ -2,6 +2,7 @@ import { Agent } from '../lib/agent.js';
 import type { Config } from '../lib/config.js';
 import type { Task } from '../lib/agent.js';
 import { CostTracker } from '../lib/cost-tracker.js';
+import { TaskManager } from './task-manager.js';
 import { config as dotenvConfig } from 'dotenv';
 import chalk from 'chalk';
 
@@ -11,9 +12,11 @@ export class AgentManager {
   private agents: Map<string, Agent> = new Map();
   private config: Config;
   private costTracker?: CostTracker;
+  private taskManager: TaskManager;
 
   constructor(config: Config) {
     this.config = config;
+    this.taskManager = new TaskManager(config.orchestrator.boardDirectory + '/tasks');
     this.initializeAgents();
     this.initializeCostTracker();
   }
@@ -111,10 +114,67 @@ export class AgentManager {
     return this.costTracker;
   }
 
+  getTaskManager(): TaskManager {
+    return this.taskManager;
+  }
+
+  async assignTaskFromManager(taskId: string): Promise<{ success: boolean; message: string; agent?: Agent }> {
+    const task = this.taskManager.getTask(taskId);
+    if (!task) return { success: false, message: `Task ${taskId} not found` };
+    if (task.status !== 'pending') return { success: false, message: `Task ${taskId} is not pending` };
+
+    const agent = this.findBestAgentForTask(task);
+    if (!agent) return { success: false, message: `No available agent found for task ${taskId}` };
+
+    await this.taskManager.assignTask(taskId, agent.id);
+    await agent.assignTask(task);
+
+    return { success: true, message: `Task ${taskId} assigned to ${agent.name}`, agent };
+  }
+
+  async executeTaskFromManager(taskId: string): Promise<{ success: boolean; output: string; cost?: any }> {
+    const task = this.taskManager.getTask(taskId);
+    if (!task) return { success: false, output: `Task ${taskId} not found` };
+
+    if (!task.assignedTo) {
+      const assignResult = await this.assignTaskFromManager(taskId);
+      if (!assignResult.success) return { success: false, output: assignResult.message };
+    }
+
+    const agent = this.getAgent(task.assignedTo!);
+    if (!agent) return { success: false, output: `Agent ${task.assignedTo} not found` };
+
+    const result = await agent.executeTask(task, this.costTracker);
+
+    if (result.success) {
+      await this.taskManager.completeTask(taskId);
+      await agent.completeTask(task);
+    } else {
+      await this.taskManager.blockTask(taskId, result.output);
+    }
+
+    return result;
+  }
+
+  async autoAssignTasks(): Promise<{ assigned: number; failed: number }> {
+    const pendingTasks = this.taskManager.getTasks({ status: 'pending' });
+    let assigned = 0;
+    let failed = 0;
+
+    for (const task of pendingTasks) {
+      const result = await this.assignTaskFromManager(task.id);
+      if (result.success) assigned++;
+      else failed++;
+    }
+
+    console.log(`✓ Auto-assigned ${assigned} tasks (${failed} failed)`);
+    return { assigned, failed };
+  }
+
   private initializeCostTracker(): void {
-    if ((this.config as any).costs?.tracking?.enabled) {
-      const storageDir = (this.config as any).costs.tracking.storageDirectory;
-      const limits = (this.config as any).costs.limits;
+    if (this.config.costs?.tracking?.enabled) {
+      const storageDir = this.config.costs.tracking.storageDirectory;
+      const limits = this.config.costs.limits;
 
       this.costTracker = new CostTracker(storageDir, limits);
 

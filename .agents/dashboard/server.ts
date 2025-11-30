@@ -131,7 +131,7 @@ app.get('/api/costs', async (req, res) => {
     const monthlySummary = costTracker.getSummary(startOfMonth);
     const allTimeSummary = costTracker.getSummary();
 
-    const limits = (config as any).costs?.limits || {};
+    const limits = config.costs?.limits || {};
 
     res.json({
       enabled: true,
