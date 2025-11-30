@@ -133,26 +133,16 @@ export class ClaudeCodeExecutor {
     const configPath = join(claudeDir, 'mcp-config.json');
     await writeFile(configPath, JSON.stringify(mcpConfig, null, 2));
 
-    // Copy settings.local.json from project root to worktree for auto-approval
-    const settingsSource = join(this.projectRoot, '.claude', 'settings.local.json');
+    // Create settings.local.json in worktree with auto-approval
     const settingsTarget = join(claudeDir, 'settings.local.json');
-
-    try {
-      await copyFile(settingsSource, settingsTarget);
-      console.log(chalk.blue(`✓ Copied settings to worktree`));
-    } catch (error) {
-      console.log(chalk.yellow(`⚠️  Could not copy settings: ${error}`));
-
-      // Create default settings with auto-approval
-      const defaultSettings = {
-        permissions: {
-          allow: ['mcp__*', 'Bash', 'WebFetch(domain:manhunt.at)'],
-        },
-        enabledMcpjsonServers: ['laravel-boost', 'agent-orchestrator'],
-      };
-      await writeFile(settingsTarget, JSON.stringify(defaultSettings, null, 2));
-      console.log(chalk.blue(`✓ Created default settings in worktree`));
-    }
+    const settings = {
+      permissions: {
+        allow: ['mcp__*', 'Bash', 'WebFetch(domain:manhunt.at)'],
+      },
+      enabledMcpjsonServers: ['laravel-boost', 'agent-orchestrator'],
+    };
+    await writeFile(settingsTarget, JSON.stringify(settings, null, 2));
+    console.log(chalk.blue(`✓ Created settings in worktree`));
 
     // Create .mcp.json in worktree with all needed MCP servers
     const worktreeMcpConfig = {
