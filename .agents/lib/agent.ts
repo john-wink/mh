@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import type { Agent as AgentConfig } from './config.js';
 import { GitManager } from './git-manager.js';
+import type { GitWorktreeManager } from './git-worktree.js';
 
 export interface Epic {
   id: string;
@@ -40,11 +41,13 @@ export class Agent {
   private completedTasks: Task[] = [];
   private gitManager: GitManager;
   private currentBranch?: string;
+  private worktreeManager?: GitWorktreeManager;
 
-  constructor(config: AgentConfig, apiKey: string) {
+  constructor(config: AgentConfig, apiKey: string, worktreeManager?: GitWorktreeManager) {
     this.config = config;
     this.client = new Anthropic({ apiKey });
     this.gitManager = new GitManager(config.workingDirectory);
+    this.worktreeManager = worktreeManager;
   }
 
   get id(): string {
@@ -297,6 +300,16 @@ If you need information from other teams or agents, clearly state what you need.
         await this.gitManager.mergeToMain(this.currentBranch, task.id);
         console.log(`✓ ${this.name} merged task ${task.id} to main`);
         this.currentBranch = undefined;
+
+        // Remove worktree after successful merge (cleanup)
+        if (this.worktreeManager) {
+          try {
+            await this.worktreeManager.removeWorktree(this.id);
+            console.log(`✓ ${this.name} cleaned up worktree after task completion`);
+          } catch (error) {
+            console.log(`⚠️  Could not remove worktree: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          }
+        }
       } catch (error) {
         console.log(`⚠️  Could not merge to main: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }

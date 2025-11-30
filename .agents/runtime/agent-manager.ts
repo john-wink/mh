@@ -46,7 +46,7 @@ export class AgentManager {
 
     // Initialize agents WITHOUT creating worktrees (lazy loading)
     for (const agentConfig of this.config.agents) {
-      const agent = new Agent(agentConfig, apiKey);
+      const agent = new Agent(agentConfig, apiKey, this.worktreeManager);
       this.agents.set(agent.id, agent);
     }
 
