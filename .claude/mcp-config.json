@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "agent-orchestrator": {
+      "command": "npm",
+      "args": [
+        "run",
+        "mcp-server"
+      ],
+      "cwd": "/Users/johnwink/Herd/manhunt/.agents",
+      "env": {
+        "BOARD_DIRECTORY": "/Users/johnwink/Herd/manhunt/.board/tasks",
+        "AGENT_ID": ""
+      }
+    }
+  }
+}

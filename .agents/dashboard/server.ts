@@ -38,6 +38,11 @@ async function initialize() {
   }
   epicBreakdownService = new EpicBreakdownService(apiKey, agentManager.getTaskManager());
   planningAgent = new PlanningAgent(apiKey, config, agentManager.getTaskManager());
+
+  // Create MCP config for Claude Code
+  const { ClaudeCodeExecutor } = await import('../runtime/claude-code-executor.js');
+  const executor = new ClaudeCodeExecutor(config.orchestrator.projectRoot);
+  await executor.createMCPConfig();
 }
 
 // Middleware

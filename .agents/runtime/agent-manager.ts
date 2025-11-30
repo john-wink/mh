@@ -4,6 +4,7 @@ import type { Task } from '../lib/agent.js';
 import { CostTracker } from '../lib/cost-tracker.js';
 import { TaskManager } from './task-manager.js';
 import { GitWorktreeManager } from '../lib/git-worktree.js';
+import { ClaudeCodeExecutor } from './claude-code-executor.js';
 import { config as dotenvConfig } from 'dotenv';
 import chalk from 'chalk';
 
@@ -15,6 +16,7 @@ export class AgentManager {
   private costTracker?: CostTracker;
   private taskManager: TaskManager;
   private worktreeManager?: GitWorktreeManager;
+  private claudeCodeExecutor?: ClaudeCodeExecutor;
 
   private initialized: boolean = false;
 
@@ -27,6 +29,13 @@ export class AgentManager {
       this.worktreeManager = new GitWorktreeManager(config.orchestrator.projectRoot);
       console.log(chalk.blue('✓ Git worktree manager initialized'));
     }
+
+    // Initialize Claude Code executor for task execution
+    this.claudeCodeExecutor = new ClaudeCodeExecutor(
+      config.orchestrator.projectRoot,
+      this.worktreeManager
+    );
+    console.log(chalk.blue('✓ Claude Code executor initialized'));
 
     this.initializeCostTracker();
   }
@@ -200,19 +209,25 @@ export class AgentManager {
     const agent = this.getAgent(task.assignedTo!);
     if (!agent) return { success: false, output: `Agent ${task.assignedTo} not found` };
 
-    // Ensure agent has a worktree before executing (in case it was assigned manually)
-    await this.ensureAgentWorktree(agent.id);
-
-    const result = await agent.executeTask(task, this.costTracker);
-
-    if (result.success) {
-      await this.taskManager.completeTask(taskId);
-      await agent.completeTask(task);
-    } else {
-      await this.taskManager.blockTask(taskId, result.output);
+    // Check if Claude Code executor is available
+    if (!this.claudeCodeExecutor) {
+      return { success: false, output: 'Claude Code executor not initialized' };
     }
 
-    return result;
+    // Execute task using Claude Code (foreground, user can see & interact)
+    const result = await this.claudeCodeExecutor.executeTask(task, agent);
+
+    if (result.success) {
+      // Task completion is handled by the agent via MCP complete_task tool
+      console.log(chalk.green(`✓ Task ${taskId} completed successfully`));
+    } else {
+      await this.taskManager.blockTask(taskId, result.error || 'Claude Code session failed');
+    }
+
+    return {
+      success: result.success,
+      output: result.error || 'Task execution completed',
+    };
   }
 
   async autoAssignTasks(): Promise<{ assigned: number; failed: number }> {

@@ -1,7 +1,7 @@
 [
   {
     "id": "TASK-001",
-    "status": "completed",
+    "status": "in_progress",
     "title": "Database Schema Design and Migration Setup",
     "description": "Create database migrations for multi-tenant architecture including organizations table, users table with tenant relationships, roles and permissions tables. Set up foreign key constraints and indexes for optimal performance. Include soft deletes and timestamps.",
     "storyPoints": 3,
@@ -10,8 +10,7 @@
     "sprint": 1,
     "epicId": "EPIC-001",
     "assignedTo": "team-1-lead",
-    "startedAt": "2025-11-30T13:32:34.295Z",
-    "completedAt": "2025-11-30T13:34:03.751Z"
+    "startedAt": "2025-11-30T14:07:49.573Z"
   },
   {
     "id": "TASK-002",
