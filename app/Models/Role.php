@@ -5,39 +5,27 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Carbon\CarbonInterface;
-use Database\Factories\UserFactory;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Database\Factories\RoleFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 
 /**
  * @property-read int $id
  * @property-read int $organization_id
  * @property-read string $name
- * @property-read string $email
- * @property-read CarbonInterface|null $email_verified_at
- * @property-read string $password
- * @property-read string|null $remember_token
+ * @property-read string $slug
+ * @property-read string|null $description
  * @property-read CarbonInterface $created_at
  * @property-read CarbonInterface $updated_at
  * @property-read CarbonInterface|null $deleted_at
  */
-final class User extends Authenticatable implements MustVerifyEmail
+final class Role extends Model
 {
-    /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, SoftDeletes;
-
-    /**
-     * @var list<string>
-     */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
+    /** @use HasFactory<RoleFactory> */
+    use HasFactory, SoftDeletes;
 
     /**
      * @return array<string, string>
@@ -48,10 +36,8 @@ final class User extends Authenticatable implements MustVerifyEmail
             'id' => 'integer',
             'organization_id' => 'integer',
             'name' => 'string',
-            'email' => 'string',
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'remember_token' => 'string',
+            'slug' => 'string',
+            'description' => 'string',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
             'deleted_at' => 'datetime',
@@ -67,10 +53,18 @@ final class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-     * @return BelongsToMany<Role, $this>
+     * @return BelongsToMany<User, $this>
      */
-    public function roles(): BelongsToMany
+    public function users(): BelongsToMany
     {
-        return $this->belongsToMany(Role::class);
+        return $this->belongsToMany(User::class);
+    }
+
+    /**
+     * @return BelongsToMany<Permission, $this>
+     */
+    public function permissions(): BelongsToMany
+    {
+        return $this->belongsToMany(Permission::class);
     }
 }
