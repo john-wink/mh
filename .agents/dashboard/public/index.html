@@ -438,6 +438,18 @@
                 <div class="config-grid" id="config-grid"></div>
             </div>
 
+            <!-- Task Management Section -->
+            <div class="config-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 class="section-title" style="color: #333; margin: 0;">📋 Task Management</h2>
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="autoAssignTasks()" style="background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold;">Auto-Assign Tasks</button>
+                        <button onclick="showCreateTaskModal()" style="background: #48bb78; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold;">+ Create Task</button>
+                    </div>
+                </div>
+                <div id="task-management"></div>
+            </div>
+
             <!-- Teams Section -->
             <div class="teams-section">
                 <h2 class="section-title">👥 Teams & Agents</h2>

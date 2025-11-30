@@ -1,0 +1,32 @@
+[
+  {
+    "id": "TASK-001",
+    "status": "pending",
+    "title": "Setup Laravel project structure",
+    "description": "Initialize Laravel with Filament, setup database, and configure basic settings",
+    "storyPoints": 5,
+    "dependencies": [],
+    "team": 0,
+    "sprint": 1
+  },
+  {
+    "id": "TASK-002",
+    "status": "pending",
+    "title": "Implement GPS tracking",
+    "description": "Add real-time GPS tracking for manhunt game",
+    "storyPoints": 8,
+    "dependencies": [],
+    "team": 1,
+    "sprint": 1
+  },
+  {
+    "id": "TASK-003",
+    "status": "pending",
+    "title": "Create authentication system",
+    "description": "User registration, login, and profile management",
+    "storyPoints": 5,
+    "dependencies": [],
+    "team": 0,
+    "sprint": 1
+  }
+]

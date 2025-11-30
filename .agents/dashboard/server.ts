@@ -22,10 +22,12 @@ let monitor: Monitor;
 async function initialize() {
   config = await loadConfig();
   agentManager = new AgentManager(config);
+  await agentManager.initialize(); // Initialize worktrees
   monitor = new Monitor(config);
 }
 
-// Serve static files
+// Middleware
+app.use(express.json());
 app.use(express.static(join(__dirname, 'public')));
 
 // API endpoints
@@ -166,6 +168,72 @@ app.get('/api/costs', async (req, res) => {
       },
       limits,
     });
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
+  }
+});
+
+// Task Management Endpoints
+app.get('/api/tasks', async (req, res) => {
+  try {
+    const taskManager = agentManager.getTaskManager();
+    const tasks = taskManager.getTasks();
+    const statistics = taskManager.getStatistics();
+    res.json({ tasks, statistics });
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
+  }
+});
+
+app.post('/api/tasks', async (req, res) => {
+  try {
+    const taskManager = agentManager.getTaskManager();
+    const { title, description, storyPoints, dependencies, team, sprint } = req.body;
+    if (!title || !description || storyPoints === undefined || team === undefined || sprint === undefined) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+    const task = await taskManager.createTask({ title, description, storyPoints, dependencies: dependencies || [], team, sprint });
+    res.json({ task });
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
+  }
+});
+
+app.post('/api/tasks/:id/assign', async (req, res) => {
+  try {
+    const result = await agentManager.assignTaskFromManager(req.params.id);
+    if (!result.success) return res.status(400).json({ error: result.message });
+    res.json({ message: result.message, agent: result.agent?.name });
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
+  }
+});
+
+app.post('/api/tasks/:id/execute', async (req, res) => {
+  try {
+    const result = await agentManager.executeTaskFromManager(req.params.id);
+    if (!result.success) return res.status(400).json({ error: result.output });
+    res.json({ output: result.output, cost: result.cost });
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
+  }
+});
+
+app.delete('/api/tasks/:id', async (req, res) => {
+  try {
+    const taskManager = agentManager.getTaskManager();
+    const deleted = await taskManager.deleteTask(req.params.id);
+    if (!deleted) return res.status(404).json({ error: 'Task not found' });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
+  }
+});
+
+app.post('/api/tasks/auto-assign', async (req, res) => {
+  try {
+    const result = await agentManager.autoAssignTasks();
+    res.json(result);
   } catch (error) {
     res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
   }

@@ -3,6 +3,7 @@ import type { Config } from '../lib/config.js';
 import type { Task } from '../lib/agent.js';
 import { CostTracker } from '../lib/cost-tracker.js';
 import { TaskManager } from './task-manager.js';
+import { GitWorktreeManager } from '../lib/git-worktree.js';
 import { config as dotenvConfig } from 'dotenv';
 import chalk from 'chalk';
 
@@ -13,15 +14,30 @@ export class AgentManager {
   private config: Config;
   private costTracker?: CostTracker;
   private taskManager: TaskManager;
+  private worktreeManager?: GitWorktreeManager;
+
+  private initialized: boolean = false;
 
   constructor(config: Config) {
     this.config = config;
     this.taskManager = new TaskManager(config.orchestrator.boardDirectory + '/tasks');
-    this.initializeAgents();
+
+    // Initialize worktree manager if git is enabled and branchPerAgent is true
+    if (config.git?.enabled && config.git.branchPerAgent) {
+      this.worktreeManager = new GitWorktreeManager(config.orchestrator.projectRoot);
+      console.log(chalk.blue('✓ Git worktree manager initialized'));
+    }
+
     this.initializeCostTracker();
   }
 
-  private initializeAgents(): void {
+  async initialize(): Promise<void> {
+    if (this.initialized) return;
+    await this.initializeAgents();
+    this.initialized = true;
+  }
+
+  private async initializeAgents(): Promise<void> {
     const apiKey = process.env.ANTHROPIC_API_KEY;
 
     if (!apiKey) {
@@ -29,8 +45,31 @@ export class AgentManager {
     }
 
     for (const agentConfig of this.config.agents) {
-      const agent = new Agent(agentConfig, apiKey);
-      this.agents.set(agent.id, agent);
+      // If worktrees are enabled, create a worktree for each agent
+      if (this.worktreeManager) {
+        try {
+          const worktreePath = await this.worktreeManager.createWorktreeForAgent(agentConfig.id);
+
+          // Update agent config to use worktree directory
+          const agentConfigWithWorktree = {
+            ...agentConfig,
+            workingDirectory: worktreePath,
+          };
+
+          const agent = new Agent(agentConfigWithWorktree, apiKey);
+          this.agents.set(agent.id, agent);
+
+          console.log(chalk.green(`✓ Agent ${agentConfig.name} initialized with worktree: ${worktreePath}`));
+        } catch (error) {
+          console.error(chalk.red(`❌ Failed to create worktree for ${agentConfig.name}:`, error));
+          // Fall back to regular directory
+          const agent = new Agent(agentConfig, apiKey);
+          this.agents.set(agent.id, agent);
+        }
+      } else {
+        const agent = new Agent(agentConfig, apiKey);
+        this.agents.set(agent.id, agent);
+      }
     }
   }
 
@@ -230,5 +269,27 @@ export class AgentManager {
       ),
       agentStatuses,
     };
+  }
+
+  getWorktreeManager(): GitWorktreeManager | undefined {
+    return this.worktreeManager;
+  }
+
+  async cleanupWorktrees(): Promise<void> {
+    if (this.worktreeManager) {
+      await this.worktreeManager.cleanupAllWorktrees();
+    }
+  }
+
+  async listWorktrees(): Promise<void> {
+    if (this.worktreeManager) {
+      await this.worktreeManager.listWorktrees();
+    }
+  }
+
+  async mergeAgentBranch(agentId: string, targetBranch: string = 'main'): Promise<void> {
+    if (this.worktreeManager) {
+      await this.worktreeManager.mergeBranch(agentId, targetBranch);
+    }
   }
 }

@@ -321,5 +321,172 @@ function updateDashboard(data) {
     }
 }
 
+// Task Management Functions
+async function fetchTasks() {
+    try {
+        const res = await fetch('/api/tasks');
+        const data = await res.json();
+        renderTasks(data.tasks, data.statistics);
+    } catch (error) {
+        console.error('Failed to fetch tasks:', error);
+    }
+}
+
+function renderTasks(tasks, stats) {
+    const statusColors = {
+        pending: '#cbd5e0',
+        in_progress: '#667eea',
+        completed: '#48bb78',
+        blocked: '#fc8181'
+    };
+
+    const statsHtml = `
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px;">
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center;">
+                <div style="font-size: 0.85em; color: #666; margin-bottom: 5px;">Total Tasks</div>
+                <div style="font-size: 1.8em; font-weight: bold; color: #333;">${stats.total}</div>
+            </div>
+            <div style="background: #fff8e1; padding: 15px; border-radius: 8px; text-align: center;">
+                <div style="font-size: 0.85em; color: #666; margin-bottom: 5px;">Pending</div>
+                <div style="font-size: 1.8em; font-weight: bold; color: #f6ad55;">${stats.pending}</div>
+            </div>
+            <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; text-align: center;">
+                <div style="font-size: 0.85em; color: #666; margin-bottom: 5px;">In Progress</div>
+                <div style="font-size: 1.8em; font-weight: bold; color: #667eea;">${stats.inProgress}</div>
+            </div>
+            <div style="background: #f0fff4; padding: 15px; border-radius: 8px; text-align: center;">
+                <div style="font-size: 0.85em; color: #666; margin-bottom: 5px;">Completed</div>
+                <div style="font-size: 1.8em; font-weight: bold; color: #48bb78;">${stats.completed}</div>
+            </div>
+            <div style="background: #fff5f5; padding: 15px; border-radius: 8px; text-align: center;">
+                <div style="font-size: 0.85em; color: #666; margin-bottom: 5px;">Blocked</div>
+                <div style="font-size: 1.8em; font-weight: bold; color: #fc8181;">${stats.blocked}</div>
+            </div>
+        </div>
+    `;
+
+    const tasksHtml = tasks.length === 0 ? '<div class="empty-state">No tasks yet. Create one to get started!</div>' : tasks.map(task => `
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid ${statusColors[task.status]};">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                <div>
+                    <div style="font-weight: bold; font-size: 1.1em; color: #333; margin-bottom: 5px;">${task.id}: ${task.title}</div>
+                    <div style="font-size: 0.9em; color: #666;">${task.description}</div>
+                </div>
+                <div style="display: flex; gap: 5px;">
+                    <span style="background: ${statusColors[task.status]}; color: white; padding: 5px 12px; border-radius: 12px; font-size: 0.85em; font-weight: bold;">${task.status.replace('_', ' ').toUpperCase()}</span>
+                    <span style="background: #667eea; color: white; padding: 5px 12px; border-radius: 12px; font-size: 0.85em; font-weight: bold;">${task.storyPoints} SP</span>
+                </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding-top: 15px; border-top: 1px solid #e2e8f0;">
+                <div style="font-size: 0.85em; color: #666;">
+                    Team ${task.team} • Sprint ${task.sprint} ${task.assignedTo ? `• Assigned to ${task.assignedTo}` : ''}
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    ${task.status === 'pending' ? `<button onclick="assignTask('${task.id}')" style="background: #667eea; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.85em;">Assign</button>` : ''}
+                    ${task.status === 'in_progress' ? `<button onclick="executeTask('${task.id}')" style="background: #48bb78; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.85em;">Execute</button>` : ''}
+                    <button onclick="deleteTask('${task.id}')" style="background: #fc8181; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.85em;">Delete</button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+
+    document.getElementById('task-management').innerHTML = statsHtml + tasksHtml;
+}
+
+async function assignTask(taskId) {
+    try {
+        const res = await fetch(`/api/tasks/${taskId}/assign`, { method: 'POST' });
+        const data = await res.json();
+        if (res.ok) {
+            alert(`Task assigned to ${data.agent}`);
+            fetchTasks();
+        } else {
+            alert(`Error: ${data.error}`);
+        }
+    } catch (error) {
+        alert(`Failed to assign task: ${error.message}`);
+    }
+}
+
+async function executeTask(taskId) {
+    if (!confirm('Execute this task? This will use API credits.')) return;
+    try {
+        const res = await fetch(`/api/tasks/${taskId}/execute`, { method: 'POST' });
+        const data = await res.json();
+        if (res.ok) {
+            alert(`Task executed!\nCost: $${data.cost?.totalCost?.toFixed(4) || 'N/A'}`);
+            fetchTasks();
+        } else {
+            alert(`Error: ${data.error}`);
+        }
+    } catch (error) {
+        alert(`Failed to execute task: ${error.message}`);
+    }
+}
+
+async function deleteTask(taskId) {
+    if (!confirm('Delete this task?')) return;
+    try {
+        const res = await fetch(`/api/tasks/${taskId}`, { method: 'DELETE' });
+        if (res.ok) {
+            fetchTasks();
+        } else {
+            alert('Failed to delete task');
+        }
+    } catch (error) {
+        alert(`Failed to delete task: ${error.message}`);
+    }
+}
+
+async function autoAssignTasks() {
+    try {
+        const res = await fetch('/api/tasks/auto-assign', { method: 'POST' });
+        const data = await res.json();
+        alert(`Auto-assigned ${data.assigned} tasks (${data.failed} failed)`);
+        fetchTasks();
+    } catch (error) {
+        alert(`Failed to auto-assign: ${error.message}`);
+    }
+}
+
+function showCreateTaskModal() {
+    const title = prompt('Task title:');
+    if (!title) return;
+    const description = prompt('Task description:');
+    if (!description) return;
+    const storyPoints = parseInt(prompt('Story points:'));
+    if (!storyPoints) return;
+    const team = parseInt(prompt('Team number (0-6):'));
+    if (team === null) return;
+    const sprint = parseInt(prompt('Sprint number:'));
+    if (!sprint) return;
+
+    createTask(title, description, storyPoints, team, sprint);
+}
+
+async function createTask(title, description, storyPoints, team, sprint) {
+    try {
+        const res = await fetch('/api/tasks', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, description, storyPoints, dependencies: [], team, sprint })
+        });
+        if (res.ok) {
+            alert('Task created!');
+            fetchTasks();
+        } else {
+            const data = await res.json();
+            alert(`Error: ${data.error}`);
+        }
+    } catch (error) {
+        alert(`Failed to create task: ${error.message}`);
+    }
+}
+
 // Initialize dashboard on page load
-document.addEventListener('DOMContentLoaded', fetchInitialData);
+document.addEventListener('DOMContentLoaded', () => {
+    fetchInitialData();
+    fetchTasks();
+    // Refresh tasks every 10 seconds
+    setInterval(fetchTasks, 10000);
+});
