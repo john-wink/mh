@@ -4,8 +4,13 @@ import { WebSocketServer } from 'ws';
 import { loadConfig } from '../lib/config.js';
 import { AgentManager } from '../runtime/agent-manager.js';
 import { Monitor } from '../runtime/monitoring.js';
+import { EpicBreakdownService } from '../lib/epic-breakdown.js';
+import { PlanningAgent } from '../lib/planning-agent.js';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { config as dotenvConfig } from 'dotenv';
+
+dotenvConfig();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -17,6 +22,8 @@ const wss = new WebSocketServer({ server });
 let config: Awaited<ReturnType<typeof loadConfig>>;
 let agentManager: AgentManager;
 let monitor: Monitor;
+let epicBreakdownService: EpicBreakdownService;
+let planningAgent: PlanningAgent;
 
 // Initialize
 async function initialize() {
@@ -24,6 +31,13 @@ async function initialize() {
   agentManager = new AgentManager(config);
   await agentManager.initialize(); // Initialize worktrees
   monitor = new Monitor(config);
+
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    throw new Error('ANTHROPIC_API_KEY environment variable is required');
+  }
+  epicBreakdownService = new EpicBreakdownService(apiKey, agentManager.getTaskManager());
+  planningAgent = new PlanningAgent(apiKey, config, agentManager.getTaskManager());
 }
 
 // Middleware
@@ -234,6 +248,128 @@ app.post('/api/tasks/auto-assign', async (req, res) => {
   try {
     const result = await agentManager.autoAssignTasks();
     res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
+  }
+});
+
+// Epic Management Endpoints
+app.get('/api/epics', async (req, res) => {
+  try {
+    const taskManager = agentManager.getTaskManager();
+    const epics = taskManager.getEpics();
+
+    // Add progress info for each epic
+    const epicsWithProgress = epics.map(epic => ({
+      ...epic,
+      progress: taskManager.getEpicProgress(epic.id),
+    }));
+
+    res.json({ epics: epicsWithProgress });
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
+  }
+});
+
+app.post('/api/epics', async (req, res) => {
+  try {
+    const taskManager = agentManager.getTaskManager();
+    const { title, description, estimatedStoryPoints, team, sprint } = req.body;
+
+    if (!title || !description || estimatedStoryPoints === undefined || team === undefined || sprint === undefined) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const epic = await taskManager.createEpic({
+      title,
+      description,
+      estimatedStoryPoints,
+      team,
+      sprint,
+    });
+
+    res.json({ epic });
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
+  }
+});
+
+app.post('/api/epics/:id/breakdown', async (req, res) => {
+  try {
+    const taskManager = agentManager.getTaskManager();
+    const epic = taskManager.getEpic(req.params.id);
+
+    if (!epic) {
+      return res.status(404).json({ error: 'Epic not found' });
+    }
+
+    if (epic.status !== 'pending') {
+      return res.status(400).json({ error: 'Epic has already been broken down' });
+    }
+
+    const tasks = await epicBreakdownService.breakdownEpic(epic);
+
+    res.json({ epic, tasks });
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
+  }
+});
+
+app.delete('/api/epics/:id', async (req, res) => {
+  try {
+    const taskManager = agentManager.getTaskManager();
+    const deleted = await taskManager.deleteEpic(req.params.id);
+
+    if (!deleted) {
+      return res.status(404).json({ error: 'Epic not found' });
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
+  }
+});
+
+app.post('/api/epics/:id/complete', async (req, res) => {
+  try {
+    const taskManager = agentManager.getTaskManager();
+    const epic = await taskManager.completeEpic(req.params.id);
+
+    if (!epic) {
+      return res.status(404).json({ error: 'Epic not found' });
+    }
+
+    res.json({ epic });
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
+  }
+});
+
+// Planning Agent Endpoints
+app.post('/api/planning/suggest', async (req, res) => {
+  try {
+    const { sprint } = req.body;
+    const currentSprint = sprint || config.orchestrator.currentSprint;
+
+    const analysis = await planningAgent.analyzeProjectAndSuggest(currentSprint);
+
+    res.json({ analysis });
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
+  }
+});
+
+app.post('/api/planning/create-suggestion', async (req, res) => {
+  try {
+    const { suggestion } = req.body;
+
+    if (!suggestion) {
+      return res.status(400).json({ error: 'Missing suggestion data' });
+    }
+
+    const created = await planningAgent.createSuggestedItem(suggestion);
+
+    res.json({ created });
   } catch (error) {
     res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
   }

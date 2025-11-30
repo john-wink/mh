@@ -1,3 +1,233 @@
+// Custom Modal System
+function showAlert(message, title = 'Information', icon = 'ℹ️') {
+    return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+        overlay.innerHTML = `
+            <div class="modal">
+                <div class="modal-header">${icon} ${title}</div>
+                <div class="modal-body">${message}</div>
+                <div class="modal-buttons">
+                    <button class="modal-button modal-button-primary">OK</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+        setTimeout(() => overlay.classList.add('show'), 10);
+
+        const closeModal = () => {
+            overlay.classList.remove('show');
+            setTimeout(() => {
+                document.body.removeChild(overlay);
+                resolve();
+            }, 300);
+        };
+
+        overlay.querySelector('.modal-button').onclick = closeModal;
+        overlay.onclick = (e) => { if (e.target === overlay) closeModal(); };
+    });
+}
+
+function showConfirm(message, title = 'Confirm', icon = '❓') {
+    return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+        overlay.innerHTML = `
+            <div class="modal">
+                <div class="modal-header">${icon} ${title}</div>
+                <div class="modal-body">${message}</div>
+                <div class="modal-buttons">
+                    <button class="modal-button modal-button-secondary cancel-btn">Cancel</button>
+                    <button class="modal-button modal-button-primary confirm-btn">Confirm</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+        setTimeout(() => overlay.classList.add('show'), 10);
+
+        const closeModal = (result) => {
+            overlay.classList.remove('show');
+            setTimeout(() => {
+                document.body.removeChild(overlay);
+                resolve(result);
+            }, 300);
+        };
+
+        overlay.querySelector('.confirm-btn').onclick = () => closeModal(true);
+        overlay.querySelector('.cancel-btn').onclick = () => closeModal(false);
+        overlay.onclick = (e) => { if (e.target === overlay) closeModal(false); };
+    });
+}
+
+function showPrompt(message, defaultValue = '', title = 'Input Required', icon = '✏️') {
+    return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+        overlay.innerHTML = `
+            <div class="modal">
+                <div class="modal-header">${icon} ${title}</div>
+                <div class="modal-body">${message}</div>
+                <input type="text" class="modal-input" value="${defaultValue}" placeholder="Enter value...">
+                <div class="modal-buttons">
+                    <button class="modal-button modal-button-secondary cancel-btn">Cancel</button>
+                    <button class="modal-button modal-button-success submit-btn">Submit</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+        setTimeout(() => overlay.classList.add('show'), 10);
+
+        const input = overlay.querySelector('.modal-input');
+        input.focus();
+        input.select();
+
+        const closeModal = (result) => {
+            overlay.classList.remove('show');
+            setTimeout(() => {
+                document.body.removeChild(overlay);
+                resolve(result);
+            }, 300);
+        };
+
+        const submit = () => {
+            const value = input.value.trim();
+            closeModal(value || null);
+        };
+
+        overlay.querySelector('.submit-btn').onclick = submit;
+        overlay.querySelector('.cancel-btn').onclick = () => closeModal(null);
+        input.onkeypress = (e) => { if (e.key === 'Enter') submit(); };
+        overlay.onclick = (e) => { if (e.target === overlay) closeModal(null); };
+    });
+}
+
+function showForm(fields, title = 'Form', icon = '📝') {
+    return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+
+        const fieldsHtml = fields.map(field => {
+            const inputType = field.type || 'text';
+            const isTextarea = inputType === 'textarea';
+            const inputHtml = isTextarea
+                ? `<textarea class="modal-textarea" name="${field.name}" placeholder="${field.placeholder || ''}">${field.value || ''}</textarea>`
+                : `<input type="${inputType}" class="modal-input" name="${field.name}" value="${field.value || ''}" placeholder="${field.placeholder || ''}">`;
+
+            return `
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold; color: var(--text-primary);">${field.label}</label>
+                    ${inputHtml}
+                </div>
+            `;
+        }).join('');
+
+        overlay.innerHTML = `
+            <div class="modal">
+                <div class="modal-header">${icon} ${title}</div>
+                <div class="modal-body">
+                    ${fieldsHtml}
+                </div>
+                <div class="modal-buttons">
+                    <button class="modal-button modal-button-secondary cancel-btn">Cancel</button>
+                    <button class="modal-button modal-button-success submit-btn">Submit</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+        setTimeout(() => overlay.classList.add('show'), 10);
+
+        const firstInput = overlay.querySelector('.modal-input, .modal-textarea');
+        if (firstInput) firstInput.focus();
+
+        const closeModal = (result) => {
+            overlay.classList.remove('show');
+            setTimeout(() => {
+                document.body.removeChild(overlay);
+                resolve(result);
+            }, 300);
+        };
+
+        const submit = () => {
+            const formData = {};
+            fields.forEach(field => {
+                const input = overlay.querySelector(`[name="${field.name}"]`);
+                formData[field.name] = input.value.trim();
+            });
+            closeModal(formData);
+        };
+
+        overlay.querySelector('.submit-btn').onclick = submit;
+        overlay.querySelector('.cancel-btn').onclick = () => closeModal(null);
+        overlay.onclick = (e) => { if (e.target === overlay) closeModal(null); };
+    });
+}
+
+// Dark Mode Management
+function initDarkMode() {
+    // Check localStorage first
+    const savedMode = localStorage.getItem('darkMode');
+
+    if (savedMode !== null) {
+        // Use saved preference
+        if (savedMode === 'true') {
+            enableDarkMode();
+        }
+    } else {
+        // Detect system preference
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (prefersDark) {
+            enableDarkMode();
+        }
+    }
+
+    // Listen for system preference changes
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+        // Only auto-switch if user hasn't manually set preference
+        if (localStorage.getItem('darkMode') === null) {
+            if (e.matches) {
+                enableDarkMode();
+            } else {
+                disableDarkMode();
+            }
+        }
+    });
+}
+
+function toggleDarkMode() {
+    const isDark = document.body.classList.contains('dark-mode');
+
+    if (isDark) {
+        disableDarkMode();
+        localStorage.setItem('darkMode', 'false');
+    } else {
+        enableDarkMode();
+        localStorage.setItem('darkMode', 'true');
+    }
+
+    // Re-render dynamic content to apply dark mode colors
+    fetchTasks();
+    fetchEpics();
+    if (currentAnalysis) {
+        renderSuggestions(currentAnalysis);
+    }
+}
+
+function enableDarkMode() {
+    document.body.classList.add('dark-mode');
+    document.getElementById('dark-mode-icon').textContent = '☀️';
+    document.getElementById('dark-mode-text').textContent = 'Light Mode';
+}
+
+function disableDarkMode() {
+    document.body.classList.remove('dark-mode');
+    document.getElementById('dark-mode-icon').textContent = '🌙';
+    document.getElementById('dark-mode-text').textContent = 'Dark Mode';
+}
+
 // Dashboard logic
 let ws;
 let reconnectInterval;
@@ -44,6 +274,9 @@ async function fetchInitialData() {
         const config = await configRes.json();
         const agents = await agentsRes.json();
         const costs = await costsRes.json();
+
+        // Set current sprint from config
+        currentSprint = config.currentSprint;
 
         renderOverallStats(status.overall);
         renderCostTracking(costs);
@@ -333,6 +566,8 @@ async function fetchTasks() {
 }
 
 function renderTasks(tasks, stats) {
+    const isDark = document.body.classList.contains('dark-mode');
+
     const statusColors = {
         pending: '#cbd5e0',
         in_progress: '#667eea',
@@ -340,45 +575,59 @@ function renderTasks(tasks, stats) {
         blocked: '#fc8181'
     };
 
+    const cardBg = isDark ? '#0a2647' : '#f8f9fa';
+    const textPrimary = isDark ? '#e8e8e8' : '#333';
+    const textSecondary = isDark ? '#b8b8b8' : '#666';
+    const borderColor = isDark ? '#1e4976' : '#e2e8f0';
+
+    // Stats background colors for dark mode
+    const statsBg = {
+        total: isDark ? '#0a2647' : '#f8f9fa',
+        pending: isDark ? 'rgba(246, 173, 85, 0.15)' : '#fff8e1',
+        inProgress: isDark ? 'rgba(102, 126, 234, 0.15)' : '#e3f2fd',
+        completed: isDark ? 'rgba(72, 187, 120, 0.15)' : '#f0fff4',
+        blocked: isDark ? 'rgba(252, 129, 129, 0.15)' : '#fff5f5'
+    };
+
     const statsHtml = `
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px;">
-            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center;">
-                <div style="font-size: 0.85em; color: #666; margin-bottom: 5px;">Total Tasks</div>
-                <div style="font-size: 1.8em; font-weight: bold; color: #333;">${stats.total}</div>
+            <div style="background: ${statsBg.total}; padding: 15px; border-radius: 8px; text-align: center;">
+                <div style="font-size: 0.85em; color: ${textSecondary}; margin-bottom: 5px;">Total Tasks</div>
+                <div style="font-size: 1.8em; font-weight: bold; color: ${textPrimary};">${stats.total}</div>
             </div>
-            <div style="background: #fff8e1; padding: 15px; border-radius: 8px; text-align: center;">
-                <div style="font-size: 0.85em; color: #666; margin-bottom: 5px;">Pending</div>
+            <div style="background: ${statsBg.pending}; padding: 15px; border-radius: 8px; text-align: center;">
+                <div style="font-size: 0.85em; color: ${textSecondary}; margin-bottom: 5px;">Pending</div>
                 <div style="font-size: 1.8em; font-weight: bold; color: #f6ad55;">${stats.pending}</div>
             </div>
-            <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; text-align: center;">
-                <div style="font-size: 0.85em; color: #666; margin-bottom: 5px;">In Progress</div>
+            <div style="background: ${statsBg.inProgress}; padding: 15px; border-radius: 8px; text-align: center;">
+                <div style="font-size: 0.85em; color: ${textSecondary}; margin-bottom: 5px;">In Progress</div>
                 <div style="font-size: 1.8em; font-weight: bold; color: #667eea;">${stats.inProgress}</div>
             </div>
-            <div style="background: #f0fff4; padding: 15px; border-radius: 8px; text-align: center;">
-                <div style="font-size: 0.85em; color: #666; margin-bottom: 5px;">Completed</div>
+            <div style="background: ${statsBg.completed}; padding: 15px; border-radius: 8px; text-align: center;">
+                <div style="font-size: 0.85em; color: ${textSecondary}; margin-bottom: 5px;">Completed</div>
                 <div style="font-size: 1.8em; font-weight: bold; color: #48bb78;">${stats.completed}</div>
             </div>
-            <div style="background: #fff5f5; padding: 15px; border-radius: 8px; text-align: center;">
-                <div style="font-size: 0.85em; color: #666; margin-bottom: 5px;">Blocked</div>
+            <div style="background: ${statsBg.blocked}; padding: 15px; border-radius: 8px; text-align: center;">
+                <div style="font-size: 0.85em; color: ${textSecondary}; margin-bottom: 5px;">Blocked</div>
                 <div style="font-size: 1.8em; font-weight: bold; color: #fc8181;">${stats.blocked}</div>
             </div>
         </div>
     `;
 
     const tasksHtml = tasks.length === 0 ? '<div class="empty-state">No tasks yet. Create one to get started!</div>' : tasks.map(task => `
-        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid ${statusColors[task.status]};">
+        <div style="background: ${cardBg}; padding: 20px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid ${statusColors[task.status]};">
             <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
                 <div>
-                    <div style="font-weight: bold; font-size: 1.1em; color: #333; margin-bottom: 5px;">${task.id}: ${task.title}</div>
-                    <div style="font-size: 0.9em; color: #666;">${task.description}</div>
+                    <div style="font-weight: bold; font-size: 1.1em; color: ${textPrimary}; margin-bottom: 5px;">${task.id}: ${task.title}</div>
+                    <div style="font-size: 0.9em; color: ${textSecondary};">${task.description}</div>
                 </div>
                 <div style="display: flex; gap: 5px;">
                     <span style="background: ${statusColors[task.status]}; color: white; padding: 5px 12px; border-radius: 12px; font-size: 0.85em; font-weight: bold;">${task.status.replace('_', ' ').toUpperCase()}</span>
                     <span style="background: #667eea; color: white; padding: 5px 12px; border-radius: 12px; font-size: 0.85em; font-weight: bold;">${task.storyPoints} SP</span>
                 </div>
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding-top: 15px; border-top: 1px solid #e2e8f0;">
-                <div style="font-size: 0.85em; color: #666;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding-top: 15px; border-top: 1px solid ${borderColor};">
+                <div style="font-size: 0.85em; color: ${textSecondary};">
                     Team ${task.team} • Sprint ${task.sprint} ${task.assignedTo ? `• Assigned to ${task.assignedTo}` : ''}
                 </div>
                 <div style="display: flex; gap: 8px;">
@@ -398,43 +647,43 @@ async function assignTask(taskId) {
         const res = await fetch(`/api/tasks/${taskId}/assign`, { method: 'POST' });
         const data = await res.json();
         if (res.ok) {
-            alert(`Task assigned to ${data.agent}`);
+            await showAlert(`Task assigned to ${data.agent}`, 'Success', '✅');
             fetchTasks();
         } else {
-            alert(`Error: ${data.error}`);
+            await showAlert(`Error: ${data.error}`, 'Error', '❌');
         }
     } catch (error) {
-        alert(`Failed to assign task: ${error.message}`);
+        await showAlert(`Failed to assign task: ${error.message}`, 'Error', '❌');
     }
 }
 
 async function executeTask(taskId) {
-    if (!confirm('Execute this task? This will use API credits.')) return;
+    if (!await showConfirm('Execute this task? This will use API credits.', 'Confirm Execution', '💰')) return;
     try {
         const res = await fetch(`/api/tasks/${taskId}/execute`, { method: 'POST' });
         const data = await res.json();
         if (res.ok) {
-            alert(`Task executed!\nCost: $${data.cost?.totalCost?.toFixed(4) || 'N/A'}`);
+            await showAlert(`Task executed!\nCost: $${data.cost?.totalCost?.toFixed(4) || 'N/A'}`, 'Success', '✅');
             fetchTasks();
         } else {
-            alert(`Error: ${data.error}`);
+            await showAlert(`Error: ${data.error}`, 'Error', '❌');
         }
     } catch (error) {
-        alert(`Failed to execute task: ${error.message}`);
+        await showAlert(`Failed to execute task: ${error.message}`, 'Error', '❌');
     }
 }
 
 async function deleteTask(taskId) {
-    if (!confirm('Delete this task?')) return;
+    if (!await showConfirm('Delete this task?', 'Confirm Delete', '🗑️')) return;
     try {
         const res = await fetch(`/api/tasks/${taskId}`, { method: 'DELETE' });
         if (res.ok) {
             fetchTasks();
         } else {
-            alert('Failed to delete task');
+            await showAlert('Failed to delete task', 'Error', '❌');
         }
     } catch (error) {
-        alert(`Failed to delete task: ${error.message}`);
+        await showAlert(`Failed to delete task: ${error.message}`, 'Error', '❌');
     }
 }
 
@@ -442,26 +691,32 @@ async function autoAssignTasks() {
     try {
         const res = await fetch('/api/tasks/auto-assign', { method: 'POST' });
         const data = await res.json();
-        alert(`Auto-assigned ${data.assigned} tasks (${data.failed} failed)`);
+        await showAlert(`Auto-assigned ${data.assigned} tasks (${data.failed} failed)`, 'Auto-Assign Complete', '🤖');
         fetchTasks();
     } catch (error) {
-        alert(`Failed to auto-assign: ${error.message}`);
+        await showAlert(`Failed to auto-assign: ${error.message}`, 'Error', '❌');
     }
 }
 
-function showCreateTaskModal() {
-    const title = prompt('Task title:');
-    if (!title) return;
-    const description = prompt('Task description:');
-    if (!description) return;
-    const storyPoints = parseInt(prompt('Story points:'));
-    if (!storyPoints) return;
-    const team = parseInt(prompt('Team number (0-6):'));
-    if (team === null) return;
-    const sprint = parseInt(prompt('Sprint number:'));
-    if (!sprint) return;
+async function showCreateTaskModal() {
+    const formData = await showForm([
+        { name: 'title', label: 'Task Title', placeholder: 'Enter task title...', type: 'text' },
+        { name: 'description', label: 'Description', placeholder: 'Enter task description...', type: 'textarea' },
+        { name: 'storyPoints', label: 'Story Points', placeholder: 'e.g., 3', type: 'number' },
+        { name: 'team', label: 'Team Number (0-6)', placeholder: 'e.g., 0', type: 'number' },
+        { name: 'sprint', label: 'Sprint Number', placeholder: 'e.g., 1', type: 'number' }
+    ], 'Create New Task', '📋');
 
-    createTask(title, description, storyPoints, team, sprint);
+    if (!formData) return;
+
+    const { title, description, storyPoints, team, sprint } = formData;
+
+    if (!title || !description || !storyPoints || team === '' || !sprint) {
+        await showAlert('Please fill in all fields', 'Validation Error', '⚠️');
+        return;
+    }
+
+    createTask(title, description, parseInt(storyPoints), parseInt(team), parseInt(sprint));
 }
 
 async function createTask(title, description, storyPoints, team, sprint) {
@@ -472,21 +727,378 @@ async function createTask(title, description, storyPoints, team, sprint) {
             body: JSON.stringify({ title, description, storyPoints, dependencies: [], team, sprint })
         });
         if (res.ok) {
-            alert('Task created!');
+            await showAlert('Task created successfully!', 'Success', '✅');
             fetchTasks();
         } else {
             const data = await res.json();
-            alert(`Error: ${data.error}`);
+            await showAlert(`Error: ${data.error}`, 'Error', '❌');
         }
     } catch (error) {
-        alert(`Failed to create task: ${error.message}`);
+        await showAlert(`Failed to create task: ${error.message}`, 'Error', '❌');
+    }
+}
+
+// Planning Agent Functions
+let currentSprint = 1;
+let currentAnalysis = null;
+
+async function getSuggestions() {
+    const button = event.target;
+    button.disabled = true;
+    button.innerHTML = '🔄 Analyzing...';
+
+    try {
+        const res = await fetch('/api/planning/suggest', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sprint: currentSprint })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+            currentAnalysis = data.analysis;
+            renderSuggestions(data.analysis);
+        } else {
+            await showAlert(`Error: ${data.error}`, 'Error', '❌');
+        }
+    } catch (error) {
+        await showAlert(`Failed to get suggestions: ${error.message}`, 'Error', '❌');
+    } finally {
+        button.disabled = false;
+        button.innerHTML = '✨ Get AI Suggestions';
+    }
+}
+
+function renderSuggestions(analysis) {
+    const priorityColors = {
+        high: '#fc8181',
+        medium: '#f6ad55',
+        low: '#68d391'
+    };
+
+    const typeIcons = {
+        epic: '🎯',
+        task: '📋'
+    };
+
+    const html = `
+        <!-- Analysis Overview -->
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h3 style="color: #333; margin: 0 0 15px 0;">📊 Project Analysis</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                <div>
+                    <div style="font-weight: bold; color: #667eea; margin-bottom: 5px;">Project Overview</div>
+                    <div style="font-size: 0.9em; color: #666;">${analysis.projectOverview}</div>
+                </div>
+                <div>
+                    <div style="font-weight: bold; color: #667eea; margin-bottom: 5px;">Team Capabilities</div>
+                    <div style="font-size: 0.9em; color: #666;">${analysis.teamCapabilities}</div>
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div>
+                    <div style="font-weight: bold; color: #48bb78; margin-bottom: 5px;">Completed Work</div>
+                    <div style="font-size: 0.9em; color: #666;">${analysis.completedWork}</div>
+                </div>
+                <div>
+                    <div style="font-weight: bold; color: #f6ad55; margin-bottom: 5px;">Pending Work</div>
+                    <div style="font-size: 0.9em; color: #666;">${analysis.pendingWork}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Suggestions -->
+        <div style="margin-bottom: 20px;">
+            <h3 style="color: #333; margin: 0 0 15px 0;">💡 Recommendations (${analysis.suggestions.length})</h3>
+            ${analysis.suggestions.length === 0 ?
+                '<div class="empty-state">No suggestions available. The AI might need more project context.</div>' :
+                analysis.suggestions.map((suggestion, index) => `
+                    <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid ${priorityColors[suggestion.priority]}; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
+                            <div>
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                                    <span style="font-size: 1.2em;">${typeIcons[suggestion.type]}</span>
+                                    <span style="font-weight: bold; font-size: 1.1em; color: #333;">${suggestion.title}</span>
+                                </div>
+                                <div style="font-size: 0.9em; color: #666; margin-bottom: 10px;">${suggestion.description}</div>
+                            </div>
+                            <div style="display: flex; gap: 8px; flex-shrink: 0;">
+                                <span style="background: ${priorityColors[suggestion.priority]}; color: white; padding: 5px 12px; border-radius: 12px; font-size: 0.85em; font-weight: bold; text-transform: uppercase;">${suggestion.priority}</span>
+                                <span style="background: #667eea; color: white; padding: 5px 12px; border-radius: 12px; font-size: 0.85em; font-weight: bold;">${suggestion.estimatedStoryPoints || (suggestion.type === 'epic' ? 8 : 3)} SP</span>
+                            </div>
+                        </div>
+
+                        <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; margin-bottom: 12px;">
+                            <div style="font-weight: bold; color: #667eea; font-size: 0.85em; margin-bottom: 5px;">💭 Reasoning</div>
+                            <div style="font-size: 0.85em; color: #555;">${suggestion.reasoning}</div>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div style="font-size: 0.85em; color: #666;">
+                                Team ${suggestion.team} • Sprint ${suggestion.sprint} • ${suggestion.type.toUpperCase()}
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button onclick="editSuggestion(${index})" style="background: #667eea; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.85em;">✏️ Edit</button>
+                                <button onclick="createSuggestion(${index})" style="background: #48bb78; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.85em; font-weight: bold;">✓ Create</button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('')
+            }
+        </div>
+
+        <!-- Next Steps -->
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 8px; color: white;">
+            <div style="font-weight: bold; margin-bottom: 10px;">🎯 Recommended Next Steps</div>
+            <div style="font-size: 0.95em; opacity: 0.95;">${analysis.nextSteps}</div>
+        </div>
+    `;
+
+    document.getElementById('planning-section').innerHTML = html;
+}
+
+async function editSuggestion(index) {
+    const suggestion = currentAnalysis.suggestions[index];
+
+    const formData = await showForm([
+        { name: 'title', label: 'Title', placeholder: 'Enter title...', type: 'text', value: suggestion.title },
+        { name: 'description', label: 'Description', placeholder: 'Enter description...', type: 'textarea', value: suggestion.description },
+        { name: 'storyPoints', label: 'Story Points', placeholder: 'e.g., 3', type: 'number', value: suggestion.estimatedStoryPoints || (suggestion.type === 'epic' ? 8 : 3) },
+        { name: 'team', label: 'Team (0-6)', placeholder: 'e.g., 0', type: 'number', value: suggestion.team },
+        { name: 'sprint', label: 'Sprint', placeholder: 'e.g., 1', type: 'number', value: suggestion.sprint }
+    ], `Edit ${suggestion.type === 'epic' ? 'Epic' : 'Task'}`, '✏️');
+
+    if (!formData) return; // User cancelled
+
+    // Update the suggestion
+    currentAnalysis.suggestions[index] = {
+        ...suggestion,
+        title: formData.title || suggestion.title,
+        description: formData.description || suggestion.description,
+        estimatedStoryPoints: parseInt(formData.storyPoints),
+        team: parseInt(formData.team),
+        sprint: parseInt(formData.sprint)
+    };
+
+    // Re-render
+    renderSuggestions(currentAnalysis);
+}
+
+async function createSuggestion(index) {
+    const suggestion = currentAnalysis.suggestions[index];
+
+    if (!await showConfirm(
+        `Create this ${suggestion.type}?\n\n${suggestion.title}\n\nThis will add it to your ${suggestion.type === 'epic' ? 'epics' : 'tasks'}.`,
+        'Confirm Creation',
+        '✨'
+    )) {
+        return;
+    }
+
+    try {
+        const res = await fetch('/api/planning/create-suggestion', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ suggestion })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+            await showAlert(`${suggestion.type === 'epic' ? 'Epic' : 'Task'} created: ${data.created.id}`, 'Success', '✅');
+
+            // Remove from suggestions
+            currentAnalysis.suggestions.splice(index, 1);
+            renderSuggestions(currentAnalysis);
+
+            // Refresh the appropriate section
+            if (suggestion.type === 'epic') {
+                fetchEpics();
+            } else {
+                fetchTasks();
+            }
+        } else {
+            await showAlert(`Error: ${data.error}`, 'Error', '❌');
+        }
+    } catch (error) {
+        await showAlert(`Failed to create ${suggestion.type}: ${error.message}`, 'Error', '❌');
+    }
+}
+
+// Epic Management Functions
+async function fetchEpics() {
+    try {
+        const res = await fetch('/api/epics');
+        const data = await res.json();
+        renderEpics(data.epics);
+    } catch (error) {
+        console.error('Failed to fetch epics:', error);
+    }
+}
+
+function renderEpics(epics) {
+    const statusColors = {
+        pending: '#cbd5e0',
+        in_progress: '#667eea',
+        completed: '#48bb78'
+    };
+
+    if (epics.length === 0) {
+        document.getElementById('epic-management').innerHTML = '<div class="empty-state">No epics yet. Create one to get started!</div>';
+        return;
+    }
+
+    const epicsHtml = epics.map(epic => `
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 25px; border-radius: 12px; margin-bottom: 20px; color: white; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+                <div>
+                    <div style="font-weight: bold; font-size: 1.3em; margin-bottom: 8px;">${epic.id}: ${epic.title}</div>
+                    <div style="font-size: 0.95em; opacity: 0.9; margin-bottom: 10px;">${epic.description}</div>
+                </div>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <span style="background: rgba(255,255,255,0.2); color: white; padding: 6px 14px; border-radius: 12px; font-size: 0.9em; font-weight: bold;">${epic.status.replace('_', ' ').toUpperCase()}</span>
+                    <span style="background: rgba(255,255,255,0.3); color: white; padding: 6px 14px; border-radius: 12px; font-size: 0.9em; font-weight: bold;">${epic.estimatedStoryPoints} SP</span>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            ${epic.progress && epic.progress.total > 0 ? `
+                <div style="background: rgba(255,255,255,0.2); border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9em;">
+                        <span>Progress: ${epic.progress.completed}/${epic.progress.total} tasks</span>
+                        <span>${Math.round((epic.progress.completed / epic.progress.total) * 100)}%</span>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.3); border-radius: 6px; overflow: hidden; height: 8px;">
+                        <div style="background: #48bb78; height: 100%; width: ${(epic.progress.completed / epic.progress.total) * 100}%;"></div>
+                    </div>
+                    <div style="display: flex; gap: 15px; margin-top: 10px; font-size: 0.85em;">
+                        <span>✅ ${epic.progress.completed} Done</span>
+                        <span>🔨 ${epic.progress.inProgress} Working</span>
+                        <span>📋 ${epic.progress.pending} Pending</span>
+                        ${epic.progress.blocked > 0 ? `<span>🚫 ${epic.progress.blocked} Blocked</span>` : ''}
+                    </div>
+                </div>
+            ` : ''}
+
+            <!-- Actions -->
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="font-size: 0.9em; opacity: 0.9;">
+                    Team ${epic.team} • Sprint ${epic.sprint} ${epic.taskIds ? `• ${epic.taskIds.length} tasks` : ''}
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    ${epic.status === 'pending' ? `
+                        <button onclick="breakdownEpic('${epic.id}')" style="background: white; color: #667eea; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.9em;">🔨 Breakdown into Tasks</button>
+                    ` : ''}
+                    ${epic.status === 'in_progress' && epic.progress && epic.progress.completed === epic.progress.total ? `
+                        <button onclick="completeEpic('${epic.id}')" style="background: #48bb78; color: white; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.9em;">✓ Mark Complete</button>
+                    ` : ''}
+                    <button onclick="deleteEpic('${epic.id}')" style="background: rgba(252,129,129,0.9); color: white; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.9em;">Delete</button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+
+    document.getElementById('epic-management').innerHTML = epicsHtml;
+}
+
+async function breakdownEpic(epicId) {
+    if (!await showConfirm('Break down this epic into tasks? This will use API credits.', 'Confirm Breakdown', '💰')) return;
+
+    try {
+        const res = await fetch(`/api/epics/${epicId}/breakdown`, { method: 'POST' });
+        const data = await res.json();
+
+        if (res.ok) {
+            await showAlert(`Epic broken down into ${data.tasks.length} tasks!`, 'Success', '✅');
+            fetchEpics();
+            fetchTasks();
+        } else {
+            await showAlert(`Error: ${data.error}`, 'Error', '❌');
+        }
+    } catch (error) {
+        await showAlert(`Failed to breakdown epic: ${error.message}`, 'Error', '❌');
+    }
+}
+
+async function completeEpic(epicId) {
+    try {
+        const res = await fetch(`/api/epics/${epicId}/complete`, { method: 'POST' });
+        if (res.ok) {
+            fetchEpics();
+        } else {
+            await showAlert('Failed to complete epic', 'Error', '❌');
+        }
+    } catch (error) {
+        await showAlert(`Failed to complete epic: ${error.message}`, 'Error', '❌');
+    }
+}
+
+async function deleteEpic(epicId) {
+    if (!await showConfirm('Delete this epic? Associated tasks will remain.', 'Confirm Delete', '🗑️')) return;
+
+    try {
+        const res = await fetch(`/api/epics/${epicId}`, { method: 'DELETE' });
+        if (res.ok) {
+            fetchEpics();
+        } else {
+            await showAlert('Failed to delete epic', 'Error', '❌');
+        }
+    } catch (error) {
+        await showAlert(`Failed to delete epic: ${error.message}`, 'Error', '❌');
+    }
+}
+
+async function showCreateEpicModal() {
+    const formData = await showForm([
+        { name: 'title', label: 'Epic Title', placeholder: 'Enter epic title...', type: 'text' },
+        { name: 'description', label: 'Description', placeholder: 'Enter epic description...', type: 'textarea' },
+        { name: 'estimatedStoryPoints', label: 'Estimated Story Points', placeholder: 'e.g., 13', type: 'number' },
+        { name: 'team', label: 'Team Number (0-6)', placeholder: 'e.g., 0', type: 'number' },
+        { name: 'sprint', label: 'Sprint Number', placeholder: 'e.g., 1', type: 'number' }
+    ], 'Create New Epic', '🎯');
+
+    if (!formData) return;
+
+    const { title, description, estimatedStoryPoints, team, sprint } = formData;
+
+    if (!title || !description || !estimatedStoryPoints || team === '' || !sprint) {
+        await showAlert('Please fill in all fields', 'Validation Error', '⚠️');
+        return;
+    }
+
+    createEpic(title, description, parseInt(estimatedStoryPoints), parseInt(team), parseInt(sprint));
+}
+
+async function createEpic(title, description, estimatedStoryPoints, team, sprint) {
+    try {
+        const res = await fetch('/api/epics', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, description, estimatedStoryPoints, team, sprint })
+        });
+
+        if (res.ok) {
+            await showAlert('Epic created successfully!', 'Success', '✅');
+            fetchEpics();
+        } else {
+            const data = await res.json();
+            await showAlert(`Error: ${data.error}`, 'Error', '❌');
+        }
+    } catch (error) {
+        await showAlert(`Failed to create epic: ${error.message}`, 'Error', '❌');
     }
 }
 
 // Initialize dashboard on page load
 document.addEventListener('DOMContentLoaded', () => {
+    initDarkMode();
     fetchInitialData();
+    fetchEpics();
     fetchTasks();
-    // Refresh tasks every 10 seconds
-    setInterval(fetchTasks, 10000);
+    // Refresh epics and tasks every 10 seconds
+    setInterval(() => {
+        fetchEpics();
+        fetchTasks();
+    }, 10000);
 });

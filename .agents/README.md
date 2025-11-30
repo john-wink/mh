@@ -1,10 +1,10 @@
-# Manhunt Agent Orchestrator
+# BountyOps Agent Orchestrator
 
-Multi-Agent Development System for the Manhunt SaaS Platform.
+Multi-Agent Development System for the BountyOps SaaS Platform.
 
 ## Overview
 
-This orchestrator manages a team of 30 AI agents (Claude models) that work collaboratively to build the Manhunt platform. Each agent has specific roles, expertise, and capabilities, mimicking a real development team.
+This orchestrator manages a team of 30 AI agents (Claude models) that work collaboratively to build the BountyOps platform. Each agent has specific roles, expertise, and capabilities, mimicking a real development team.
 
 ## Architecture
 

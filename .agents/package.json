@@ -1,7 +1,7 @@
 {
-  "name": "manhunt-agent-orchestrator",
+  "name": "bountyops-agent-orchestrator",
   "version": "1.0.0",
-  "description": "Multi-Agent Development Orchestrator for Manhunt SaaS Platform",
+  "description": "Multi-Agent Development Orchestrator for BountyOps SaaS Platform",
   "type": "module",
   "main": "orchestrator/index.ts",
   "scripts": {
@@ -38,6 +38,6 @@
     "multi-agent",
     "development"
   ],
-  "author": "Manhunt Team",
+  "author": "BountyOps Team",
   "license": "MIT"
 }
