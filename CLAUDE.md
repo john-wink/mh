@@ -369,12 +369,22 @@ document.addEventListener('livewire:init', function () {
 </code-snippet>
 
 
+=== rector/core rules ===
+
+## Rector Code Refactoring
+
+- You must run `vendor/bin/rector` before running Pint to ensure your code follows modern PHP standards and Laravel best practices.
+- Rector automatically refactors code to use newer PHP features and fixes common issues.
+- Do not run `vendor/bin/rector --dry-run`, simply run `vendor/bin/rector` to apply the refactorings.
+
+
 === pint/core rules ===
 
 ## Laravel Pint Code Formatter
 
-- You must run `vendor/bin/pint --dirty` before finalizing changes to ensure your code matches the project's expected style.
+- You must run `vendor/bin/pint --dirty` AFTER running Rector to ensure your code matches the project's expected style.
 - Do not run `vendor/bin/pint --test`, simply run `vendor/bin/pint` to fix any formatting issues.
+- The correct order is: Rector first, then Pint.
 
 
 === pest/core rules ===

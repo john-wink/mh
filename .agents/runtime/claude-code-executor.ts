@@ -311,15 +311,23 @@ You have access to the following MCP servers:
 2. Analyze the task and plan your approach
 3. Use report_progress() to update status as you work
 4. Implement the solution following Laravel best practices
-5. Write comprehensive tests
-6. **CRITICAL:** When finished, call complete_task(taskId="${task.id}", summary="<your summary>")
-7. After calling complete_task(), you can exit (the system will auto-merge your branch to main)
+5. Write comprehensive tests for your changes
+6. **CRITICAL:** Before committing, run the ENTIRE test suite with \`php artisan test\`
+   - If ANY test fails (even existing ones not related to your changes):
+     * Investigate the failure
+     * Either fix the bug causing the test to fail
+     * OR update the test if it's outdated
+   - Do NOT proceed until ALL tests pass
+7. After all tests pass, commit your changes
+8. **CRITICAL:** When finished, call complete_task(taskId="${task.id}", summary="<your summary>")
+9. After calling complete_task(), you can exit (the system will auto-merge your branch to gitbutler/workspace)
 
 **Important:**
 - All changes are in your dedicated worktree (isolated from other agents)
-- Commit your changes as you make progress
+- Commit your changes only after ALL tests pass
 - Write tests for all code
 - Follow Laravel best practices
+- **You MUST run the full test suite before every commit - no exceptions**
 - **You MUST call complete_task() to mark the task as done - this is how the system knows you're finished**
 - After complete_task() is called, simply exit this session (Ctrl+C or end conversation)
 

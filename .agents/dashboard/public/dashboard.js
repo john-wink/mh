@@ -565,8 +565,23 @@ async function fetchTasks() {
     }
 }
 
+// Store tasks globally for filtering
+let allTasks = [];
+let taskStats = {};
+
+// Store epics globally for filtering
+let allEpics = [];
+
 function renderTasks(tasks, stats) {
+    // Store for filtering
+    allTasks = tasks;
+    taskStats = stats;
+
     const isDark = document.body.classList.contains('dark-mode');
+    const hideCompleted = document.getElementById('hideCompleted')?.checked || false;
+
+    // Filter tasks based on checkbox
+    const filteredTasks = hideCompleted ? tasks.filter(t => t.status !== 'completed') : tasks;
 
     const statusColors = {
         pending: '#cbd5e0',
@@ -590,58 +605,70 @@ function renderTasks(tasks, stats) {
     };
 
     const statsHtml = `
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px;">
-            <div style="background: ${statsBg.total}; padding: 15px; border-radius: 8px; text-align: center;">
-                <div style="font-size: 0.85em; color: ${textSecondary}; margin-bottom: 5px;">Total Tasks</div>
-                <div style="font-size: 1.8em; font-weight: bold; color: ${textPrimary};">${stats.total}</div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 15px;">
+            <div style="background: ${statsBg.total}; padding: 10px; border-radius: 6px; text-align: center;">
+                <div style="font-size: 0.75em; color: ${textSecondary}; margin-bottom: 3px;">Total</div>
+                <div style="font-size: 1.5em; font-weight: bold; color: ${textPrimary};">${stats.total}</div>
             </div>
-            <div style="background: ${statsBg.pending}; padding: 15px; border-radius: 8px; text-align: center;">
-                <div style="font-size: 0.85em; color: ${textSecondary}; margin-bottom: 5px;">Pending</div>
-                <div style="font-size: 1.8em; font-weight: bold; color: #f6ad55;">${stats.pending}</div>
+            <div style="background: ${statsBg.pending}; padding: 10px; border-radius: 6px; text-align: center;">
+                <div style="font-size: 0.75em; color: ${textSecondary}; margin-bottom: 3px;">Pending</div>
+                <div style="font-size: 1.5em; font-weight: bold; color: #f6ad55;">${stats.pending}</div>
             </div>
-            <div style="background: ${statsBg.inProgress}; padding: 15px; border-radius: 8px; text-align: center;">
-                <div style="font-size: 0.85em; color: ${textSecondary}; margin-bottom: 5px;">In Progress</div>
-                <div style="font-size: 1.8em; font-weight: bold; color: #667eea;">${stats.inProgress}</div>
+            <div style="background: ${statsBg.inProgress}; padding: 10px; border-radius: 6px; text-align: center;">
+                <div style="font-size: 0.75em; color: ${textSecondary}; margin-bottom: 3px;">In Progress</div>
+                <div style="font-size: 1.5em; font-weight: bold; color: #667eea;">${stats.inProgress}</div>
             </div>
-            <div style="background: ${statsBg.completed}; padding: 15px; border-radius: 8px; text-align: center;">
-                <div style="font-size: 0.85em; color: ${textSecondary}; margin-bottom: 5px;">Completed</div>
-                <div style="font-size: 1.8em; font-weight: bold; color: #48bb78;">${stats.completed}</div>
+            <div style="background: ${statsBg.completed}; padding: 10px; border-radius: 6px; text-align: center;">
+                <div style="font-size: 0.75em; color: ${textSecondary}; margin-bottom: 3px;">Completed</div>
+                <div style="font-size: 1.5em; font-weight: bold; color: #48bb78;">${stats.completed}</div>
             </div>
-            <div style="background: ${statsBg.blocked}; padding: 15px; border-radius: 8px; text-align: center;">
-                <div style="font-size: 0.85em; color: ${textSecondary}; margin-bottom: 5px;">Blocked</div>
-                <div style="font-size: 1.8em; font-weight: bold; color: #fc8181;">${stats.blocked}</div>
+            <div style="background: ${statsBg.blocked}; padding: 10px; border-radius: 6px; text-align: center;">
+                <div style="font-size: 0.75em; color: ${textSecondary}; margin-bottom: 3px;">Blocked</div>
+                <div style="font-size: 1.5em; font-weight: bold; color: #fc8181;">${stats.blocked}</div>
             </div>
         </div>
     `;
 
-    const tasksHtml = tasks.length === 0 ? '<div class="empty-state">No tasks yet. Create one to get started!</div>' : tasks.map(task => `
-        <div style="background: ${cardBg}; padding: 20px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid ${statusColors[task.status]};">
-            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
-                <div>
-                    <div style="font-weight: bold; font-size: 1.1em; color: ${textPrimary}; margin-bottom: 5px;">${task.id}: ${task.title}</div>
-                    <div style="font-size: 0.9em; color: ${textSecondary};">${task.description}</div>
+    const tasksHtml = filteredTasks.length === 0 ?
+        '<div class="empty-state">No tasks to display.</div>' :
+        filteredTasks.map(task => `
+        <div style="background: ${cardBg}; padding: 12px; border-radius: 6px; margin-bottom: 8px; border-left: 3px solid ${statusColors[task.status]};">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 6px;">
+                <div style="flex: 1;">
+                    <div style="font-weight: bold; font-size: 0.95em; color: ${textPrimary}; margin-bottom: 3px;">${task.id}: ${task.title}</div>
+                    <div style="font-size: 0.8em; color: ${textSecondary}; line-height: 1.3;">${task.description}</div>
                 </div>
-                <div style="display: flex; gap: 5px;">
-                    <span style="background: ${statusColors[task.status]}; color: white; padding: 5px 12px; border-radius: 12px; font-size: 0.85em; font-weight: bold;">${task.status.replace('_', ' ').toUpperCase()}</span>
-                    <span style="background: #667eea; color: white; padding: 5px 12px; border-radius: 12px; font-size: 0.85em; font-weight: bold;">${task.storyPoints} SP</span>
+                <div style="display: flex; gap: 4px; margin-left: 10px;">
+                    <span style="background: ${statusColors[task.status]}; color: white; padding: 3px 8px; border-radius: 10px; font-size: 0.75em; font-weight: bold; white-space: nowrap;">${task.status.replace('_', ' ').toUpperCase()}</span>
+                    <span style="background: #667eea; color: white; padding: 3px 8px; border-radius: 10px; font-size: 0.75em; font-weight: bold;">${task.storyPoints} SP</span>
                 </div>
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding-top: 15px; border-top: 1px solid ${borderColor};">
-                <div style="font-size: 0.85em; color: ${textSecondary};">
-                    Team ${task.team} • Sprint ${task.sprint} ${task.assignedTo ? `• Assigned to ${task.assignedTo}` : ''}
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; padding-top: 8px; border-top: 1px solid ${borderColor};">
+                <div style="font-size: 0.75em; color: ${textSecondary};">
+                    Team ${task.team} • Sprint ${task.sprint} ${task.assignedTo ? `• ${task.assignedTo}` : ''}
                 </div>
-                <div style="display: flex; gap: 8px;">
-                    ${task.status === 'pending' ? `<button onclick="assignTask('${task.id}')" style="background: #667eea; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.85em;">Assign</button>` : ''}
-                    ${task.status === 'in_progress' ? `<button onclick="executeTask('${task.id}')" style="background: #48bb78; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.85em;">Execute</button>` : ''}
-                    ${task.status === 'in_progress' ? `<button onclick="completeTask('${task.id}')" style="background: #9f7aea; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.85em;">Complete & Merge</button>` : ''}
-                    ${task.status === 'blocked' ? `<button onclick="unblockTask('${task.id}')" style="background: #f6ad55; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.85em;">Unblock</button>` : ''}
-                    <button onclick="deleteTask('${task.id}')" style="background: #fc8181; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.85em;">Delete</button>
+                <div style="display: flex; gap: 5px;">
+                    ${task.status === 'pending' ? `<button onclick="assignTask('${task.id}')" style="background: #667eea; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.75em;">Assign</button>` : ''}
+                    ${task.status === 'in_progress' ? `<button onclick="executeTask('${task.id}')" style="background: #48bb78; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.75em;">Execute</button>` : ''}
+                    ${task.status === 'in_progress' ? `<button onclick="completeTask('${task.id}')" style="background: #9f7aea; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.75em;">Complete</button>` : ''}
+                    ${task.status === 'blocked' ? `<button onclick="unblockTask('${task.id}')" style="background: #f6ad55; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.75em;">Unblock</button>` : ''}
+                    <button onclick="deleteTask('${task.id}')" style="background: #fc8181; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.75em;">Delete</button>
                 </div>
             </div>
         </div>
     `).join('');
 
     document.getElementById('task-management').innerHTML = statsHtml + tasksHtml;
+}
+
+function toggleCompletedTasks() {
+    // Re-render tasks with current filter
+    renderTasks(allTasks, taskStats);
+}
+
+function toggleCompletedEpics() {
+    // Re-render epics with current filter
+    renderEpics(allEpics);
 }
 
 async function assignTask(taskId) {
@@ -976,41 +1003,50 @@ async function fetchEpics() {
 }
 
 function renderEpics(epics) {
+    // Store for filtering
+    allEpics = epics;
+
+    const hideCompleted = document.getElementById('hideCompletedEpics')?.checked ?? true; // Default to true
+    const filteredEpics = hideCompleted ? epics.filter(e => e.status !== 'completed') : epics;
+
     const statusColors = {
         pending: '#cbd5e0',
         in_progress: '#667eea',
         completed: '#48bb78'
     };
 
-    if (epics.length === 0) {
-        document.getElementById('epic-management').innerHTML = '<div class="empty-state">No epics yet. Create one to get started!</div>';
+    if (filteredEpics.length === 0) {
+        const message = hideCompleted && epics.length > 0
+            ? '<div class="empty-state">All epics completed! Uncheck "Hide Completed" to see them.</div>'
+            : '<div class="empty-state">No epics yet. Create one to get started!</div>';
+        document.getElementById('epic-management').innerHTML = message;
         return;
     }
 
-    const epicsHtml = epics.map(epic => `
-        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 25px; border-radius: 12px; margin-bottom: 20px; color: white; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
-            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+    const epicsHtml = filteredEpics.map(epic => `
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 12px; border-radius: 12px; margin-bottom: 15px; color: white; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
                 <div>
-                    <div style="font-weight: bold; font-size: 1.3em; margin-bottom: 8px;">${epic.id}: ${epic.title}</div>
-                    <div style="font-size: 0.95em; opacity: 0.9; margin-bottom: 10px;">${epic.description}</div>
+                    <div style="font-weight: bold; font-size: 1.05em; margin-bottom: 6px;">${epic.id}: ${epic.title}</div>
+                    <div style="font-size: 0.85em; opacity: 0.9; margin-bottom: 8px;">${epic.description}</div>
                 </div>
-                <div style="display: flex; gap: 8px; align-items: center;">
-                    <span style="background: rgba(255,255,255,0.2); color: white; padding: 6px 14px; border-radius: 12px; font-size: 0.9em; font-weight: bold;">${epic.status.replace('_', ' ').toUpperCase()}</span>
-                    <span style="background: rgba(255,255,255,0.3); color: white; padding: 6px 14px; border-radius: 12px; font-size: 0.9em; font-weight: bold;">${epic.estimatedStoryPoints} SP</span>
+                <div style="display: flex; gap: 6px; align-items: center;">
+                    <span style="background: rgba(255,255,255,0.2); color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.75em; font-weight: bold;">${epic.status.replace('_', ' ').toUpperCase()}</span>
+                    <span style="background: rgba(255,255,255,0.3); color: white; padding: 4px 10px; border-radius: 12px; font-size: 0.75em; font-weight: bold;">${epic.estimatedStoryPoints} SP</span>
                 </div>
             </div>
 
             <!-- Progress Bar -->
             ${epic.progress && epic.progress.total > 0 ? `
-                <div style="background: rgba(255,255,255,0.2); border-radius: 8px; padding: 15px; margin-bottom: 15px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9em;">
+                <div style="background: rgba(255,255,255,0.2); border-radius: 6px; padding: 10px; margin-bottom: 10px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.8em;">
                         <span>Progress: ${epic.progress.completed}/${epic.progress.total} tasks</span>
                         <span>${Math.round((epic.progress.completed / epic.progress.total) * 100)}%</span>
                     </div>
-                    <div style="background: rgba(255,255,255,0.3); border-radius: 6px; overflow: hidden; height: 8px;">
+                    <div style="background: rgba(255,255,255,0.3); border-radius: 4px; overflow: hidden; height: 6px;">
                         <div style="background: #48bb78; height: 100%; width: ${(epic.progress.completed / epic.progress.total) * 100}%;"></div>
                     </div>
-                    <div style="display: flex; gap: 15px; margin-top: 10px; font-size: 0.85em;">
+                    <div style="display: flex; gap: 10px; margin-top: 6px; font-size: 0.75em;">
                         <span>✅ ${epic.progress.completed} Done</span>
                         <span>🔨 ${epic.progress.inProgress} Working</span>
                         <span>📋 ${epic.progress.pending} Pending</span>
@@ -1021,17 +1057,17 @@ function renderEpics(epics) {
 
             <!-- Actions -->
             <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div style="font-size: 0.9em; opacity: 0.9;">
+                <div style="font-size: 0.8em; opacity: 0.9;">
                     Team ${epic.team} • Sprint ${epic.sprint} ${epic.taskIds ? `• ${epic.taskIds.length} tasks` : ''}
                 </div>
-                <div style="display: flex; gap: 10px;">
+                <div style="display: flex; gap: 6px;">
                     ${epic.status === 'pending' ? `
-                        <button onclick="breakdownEpic('${epic.id}')" style="background: white; color: #667eea; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.9em;">🔨 Breakdown into Tasks</button>
+                        <button onclick="breakdownEpic('${epic.id}')" style="background: white; color: #667eea; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.75em;">🔨 Breakdown</button>
                     ` : ''}
                     ${epic.status === 'in_progress' && epic.progress && epic.progress.completed === epic.progress.total ? `
-                        <button onclick="completeEpic('${epic.id}')" style="background: #48bb78; color: white; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.9em;">✓ Mark Complete</button>
+                        <button onclick="completeEpic('${epic.id}')" style="background: #48bb78; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.75em;">✓ Complete</button>
                     ` : ''}
-                    <button onclick="deleteEpic('${epic.id}')" style="background: rgba(252,129,129,0.9); color: white; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.9em;">Delete</button>
+                    <button onclick="deleteEpic('${epic.id}')" style="background: rgba(252,129,129,0.9); color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.75em;">Delete</button>
                 </div>
             </div>
         </div>

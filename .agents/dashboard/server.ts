@@ -539,7 +539,6 @@ app.post('/api/worktrees/sync-all', async (req, res) => {
 
 // WebSocket connection for real-time updates
 wss.on('connection', (ws) => {
-  console.log('Client connected to dashboard');
 
   // Send initial status
   const sendStatus = async () => {
@@ -557,7 +556,6 @@ wss.on('connection', (ws) => {
   const interval = setInterval(sendStatus, 5000);
 
   ws.on('close', () => {
-    console.log('Client disconnected from dashboard');
     clearInterval(interval);
   });
 
