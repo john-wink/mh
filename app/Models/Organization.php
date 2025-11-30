@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Traits\TableNameTrait;
 use Carbon\CarbonInterface;
 use Database\Factories\OrganizationFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -24,7 +25,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 final class Organization extends Model
 {
     /** @use HasFactory<OrganizationFactory> */
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, TableNameTrait;
 
     /**
      * @return array<string, string>
