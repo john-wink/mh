@@ -28,8 +28,49 @@ export class GitWorktreeManager {
         cwd: this.projectRoot,
       });
       console.log(chalk.green('✓ Pruned stale worktree registrations'));
+
+      // Reconstruct worktrees map from existing worktrees
+      await this.reconstructWorktreesMap();
     } catch (error) {
       console.log(chalk.yellow('⚠️  Could not prune worktrees:', error));
+    }
+  }
+
+  /**
+   * Reconstruct the worktrees map by parsing git worktree list
+   */
+  private async reconstructWorktreesMap(): Promise<void> {
+    try {
+      const { stdout } = await execAsync('git worktree list --porcelain', {
+        cwd: this.projectRoot,
+      });
+
+      // Parse porcelain output - each worktree is separated by blank line
+      const worktrees = stdout.split('\n\n').filter((block) => block.trim());
+
+      for (const block of worktrees) {
+        const lines = block.split('\n');
+        const worktreeLine = lines.find((l) => l.startsWith('worktree '));
+
+        if (worktreeLine) {
+          const worktreePath = worktreeLine.replace('worktree ', '');
+
+          // Only register worktrees in our .worktrees directory
+          if (worktreePath.includes(this.worktreeBaseDir)) {
+            const agentId = worktreePath.split('/').pop();
+            if (agentId) {
+              this.worktrees.set(agentId, worktreePath);
+              console.log(chalk.blue(`  ↳ Registered existing worktree: ${agentId}`));
+            }
+          }
+        }
+      }
+
+      if (this.worktrees.size > 0) {
+        console.log(chalk.green(`✓ Reconstructed ${this.worktrees.size} worktree(s) from git`));
+      }
+    } catch (error) {
+      console.log(chalk.yellow('⚠️  Could not reconstruct worktrees map:', error));
     }
   }
 

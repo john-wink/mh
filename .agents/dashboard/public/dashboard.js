@@ -633,6 +633,7 @@ function renderTasks(tasks, stats) {
                 <div style="display: flex; gap: 8px;">
                     ${task.status === 'pending' ? `<button onclick="assignTask('${task.id}')" style="background: #667eea; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.85em;">Assign</button>` : ''}
                     ${task.status === 'in_progress' ? `<button onclick="executeTask('${task.id}')" style="background: #48bb78; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.85em;">Execute</button>` : ''}
+                    ${task.status === 'in_progress' ? `<button onclick="completeTask('${task.id}')" style="background: #9f7aea; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.85em;">Complete & Merge</button>` : ''}
                     ${task.status === 'blocked' ? `<button onclick="unblockTask('${task.id}')" style="background: #f6ad55; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.85em;">Unblock</button>` : ''}
                     <button onclick="deleteTask('${task.id}')" style="background: #fc8181; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.85em;">Delete</button>
                 </div>
@@ -671,6 +672,26 @@ async function executeTask(taskId) {
         }
     } catch (error) {
         await showAlert(`Failed to execute task: ${error.message}`, 'Error', '❌');
+    }
+}
+
+async function completeTask(taskId) {
+    if (!await showConfirm('Complete this task and merge to main?', 'Confirm Complete', '✅')) return;
+    try {
+        const res = await fetch(`/api/tasks/${taskId}/complete`, { method: 'POST' });
+        const data = await res.json();
+        if (res.ok) {
+            if (data.warning) {
+                await showAlert(`${data.message}\n\nWarning: ${data.warning}`, 'Completed with Warnings', '⚠️');
+            } else {
+                await showAlert(data.message || 'Task completed and merged to main', 'Success', '✅');
+            }
+            fetchTasks();
+        } else {
+            await showAlert(`Error: ${data.error}`, 'Error', '❌');
+        }
+    } catch (error) {
+        await showAlert(`Failed to complete task: ${error.message}`, 'Error', '❌');
     }
 }
 

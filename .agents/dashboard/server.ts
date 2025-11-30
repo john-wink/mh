@@ -249,6 +249,53 @@ app.post('/api/tasks/:id/unblock', async (req, res) => {
   }
 });
 
+app.post('/api/tasks/:id/complete', async (req, res) => {
+  try {
+    const taskManager = agentManager.getTaskManager();
+    const task = taskManager.getTask(req.params.id);
+
+    if (!task) {
+      return res.status(404).json({ error: 'Task not found' });
+    }
+
+    if (!task.assignedTo) {
+      return res.status(400).json({ error: 'Task is not assigned to any agent' });
+    }
+
+    // Mark task as completed
+    await taskManager.completeTask(req.params.id);
+
+    // Get agent and merge branch
+    const agent = agentManager.getAgent(task.assignedTo);
+    const worktreeManager = agentManager.getWorktreeManager();
+
+    if (agent && worktreeManager) {
+      try {
+        console.log(`🔀 Merging ${agent.name}'s branch to main...`);
+        await worktreeManager.mergeBranch(agent.id);
+        console.log(`✓ Branch merged to main`);
+
+        console.log(`🧹 Cleaning up worktree...`);
+        await worktreeManager.removeWorktree(agent.id);
+        console.log(`✓ Worktree removed`);
+
+        res.json({ success: true, message: 'Task completed and branch merged to main' });
+      } catch (error) {
+        console.error(`⚠️  Failed to merge/cleanup: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        res.json({
+          success: true,
+          message: 'Task marked as completed but merge/cleanup failed',
+          warning: error instanceof Error ? error.message : 'Unknown error',
+        });
+      }
+    } else {
+      res.json({ success: true, message: 'Task completed (no worktree to merge)' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
+  }
+});
+
 app.delete('/api/tasks/:id', async (req, res) => {
   try {
     const taskManager = agentManager.getTaskManager();
