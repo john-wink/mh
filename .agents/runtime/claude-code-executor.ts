@@ -38,10 +38,13 @@ export class ClaudeCodeExecutor {
       // 1. Ensure worktree exists for this agent
       const worktreePath = await this.ensureWorktree(agent.id, agent.name);
 
-      // 2. Build initial prompt for Claude Code
+      // 2. Create MCP config for this session
+      await this.createMCPConfig(worktreePath, agent.id, task.id);
+
+      // 3. Build initial prompt for Claude Code
       const initialPrompt = this.buildInitialPrompt(task, agent);
 
-      // 3. Start Claude Code session (foreground, user can see & interact)
+      // 4. Start Claude Code session (foreground, user can see & interact)
       const result = await this.startClaudeCodeSession({
         workingDirectory: worktreePath,
         agentId: agent.id,
@@ -88,6 +91,43 @@ export class ClaudeCodeExecutor {
     console.log(chalk.green(`✓ Worktree created: ${worktreePath}`));
 
     return worktreePath;
+  }
+
+  /**
+   * Create MCP config for this session in the worktree directory
+   */
+  private async createMCPConfig(worktreePath: string, agentId: string, taskId: string): Promise<void> {
+    const { mkdir } = await import('fs/promises');
+    const claudeDir = join(worktreePath, '.claude');
+
+    // Create .claude directory if it doesn't exist
+    await mkdir(claudeDir, { recursive: true });
+
+    // Create MCP config with agent-specific environment variables
+    const mcpConfig = {
+      mcpServers: {
+        'agent-orchestrator': {
+          command: 'npm',
+          args: ['run', 'mcp-server'],
+          cwd: join(this.projectRoot, '.agents'),
+          env: {
+            BOARD_DIRECTORY: join(this.projectRoot, '.board/tasks'),
+            AGENT_ID: agentId,
+            TASK_ID: taskId,
+          },
+          alwaysAllow: ['tools', 'resources'],
+        },
+      },
+      globalSettings: {
+        autoApprove: true,
+      },
+    };
+
+    // Write config to worktree .claude directory
+    const configPath = join(claudeDir, 'mcp-config.json');
+    await writeFile(configPath, JSON.stringify(mcpConfig, null, 2));
+
+    console.log(chalk.blue(`✓ Created MCP config for ${agentId} in worktree`));
   }
 
   /**
@@ -197,14 +237,16 @@ You have access to the following MCP servers:
 3. Use report_progress() to update status as you work
 4. Implement the solution following Laravel best practices
 5. Write comprehensive tests
-6. Use complete_task() when finished with a summary
+6. **CRITICAL:** When finished, call complete_task(taskId="${task.id}", summary="<your summary>")
+7. After calling complete_task(), you can exit (the system will auto-merge your branch to main)
 
 **Important:**
 - All changes are in your dedicated worktree (isolated from other agents)
 - Commit your changes as you make progress
 - Write tests for all code
 - Follow Laravel best practices
-- Ask questions if requirements are unclear
+- **You MUST call complete_task() to mark the task as done - this is how the system knows you're finished**
+- After complete_task() is called, simply exit this session (Ctrl+C or end conversation)
 
 Ready to start working on this task?`;
   }
