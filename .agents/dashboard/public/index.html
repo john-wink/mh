@@ -706,6 +706,19 @@
                 <h2 class="section-title">👥 Teams & Agents</h2>
                 <div class="team-grid" id="teams-grid"></div>
             </div>
+
+            <!-- Worktrees Section -->
+            <div class="config-section" style="margin-top: 30px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 class="section-title" style="color: #333; margin: 0;">🌳 Git Worktrees</h2>
+                    <button onclick="syncAllWorktrees()" style="padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1em;">
+                        🔄 Sync All
+                    </button>
+                </div>
+                <div id="worktrees-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px;">
+                    <p style="color: var(--text-secondary);">Loading worktree information...</p>
+                </div>
+            </div>
         </div>
     </div>
 

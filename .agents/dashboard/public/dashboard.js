@@ -1090,15 +1090,151 @@ async function createEpic(title, description, estimatedStoryPoints, team, sprint
     }
 }
 
+// Worktree Management Functions
+async function fetchWorktrees() {
+    try {
+        const res = await fetch('/api/worktrees');
+        const data = await res.json();
+
+        if (!data.enabled) {
+            document.getElementById('worktrees-grid').innerHTML = `
+                <p style="color: var(--text-secondary);">Git worktrees are not enabled</p>
+            `;
+            return;
+        }
+
+        renderWorktrees(data.worktrees);
+    } catch (error) {
+        console.error('Error fetching worktrees:', error);
+        document.getElementById('worktrees-grid').innerHTML = `
+            <p style="color: var(--text-secondary);">Error loading worktrees</p>
+        `;
+    }
+}
+
+function renderWorktrees(worktrees) {
+    const grid = document.getElementById('worktrees-grid');
+
+    if (!worktrees || worktrees.length === 0) {
+        grid.innerHTML = '<p style="color: var(--text-secondary);">No worktrees found</p>';
+        return;
+    }
+
+    grid.innerHTML = worktrees
+        .map(wt => {
+            const statusIcon = wt.isWorking ? '🔨' : (wt.hasChanges ? '📝' : '✅');
+            const statusText = wt.isWorking ? 'Working' : (wt.hasChanges ? 'Has changes' : 'Clean');
+            const statusColor = wt.isWorking ? '#ff9800' : (wt.hasChanges ? '#4caf50' : '#999');
+
+            const totalChanges = wt.files.added.length + wt.files.modified.length + wt.files.deleted.length;
+
+            return `
+                <div style="background: var(--card-bg); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px var(--card-shadow);">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+                        <div>
+                            <h3 style="margin: 0; color: var(--text-primary); font-size: 1.2em;">${wt.agentName}</h3>
+                            <p style="margin: 5px 0 0 0; color: var(--text-secondary); font-size: 0.9em;">
+                                Team ${wt.team ?? 'N/A'} • ${wt.branch || 'No branch'}
+                            </p>
+                        </div>
+                        <span style="background: ${statusColor}; color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.85em;">
+                            ${statusIcon} ${statusText}
+                        </span>
+                    </div>
+
+                    ${wt.currentTasks && wt.currentTasks.length > 0 ? `
+                        <div style="background: #fff3cd; padding: 10px; border-radius: 8px; margin-bottom: 15px;">
+                            <strong style="color: #856404;">Current Tasks:</strong>
+                            ${wt.currentTasks.map(t => `<div style="color: #856404; margin-top: 5px;">📌 ${t.title}</div>`).join('')}
+                        </div>
+                    ` : ''}
+
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px;">
+                        <div style="text-align: center; padding: 10px; background: var(--input-bg); border-radius: 8px;">
+                            <div style="font-size: 1.5em; font-weight: bold; color: #4caf50;">${wt.ahead || 0}</div>
+                            <div style="font-size: 0.8em; color: var(--text-secondary);">Ahead</div>
+                        </div>
+                        <div style="text-align: center; padding: 10px; background: var(--input-bg); border-radius: 8px;">
+                            <div style="font-size: 1.5em; font-weight: bold; color: #f44336;">${wt.behind || 0}</div>
+                            <div style="font-size: 0.8em; color: var(--text-secondary);">Behind</div>
+                        </div>
+                        <div style="text-align: center; padding: 10px; background: var(--input-bg); border-radius: 8px;">
+                            <div style="font-size: 1.5em; font-weight: bold; color: #2196f3;">${totalChanges}</div>
+                            <div style="font-size: 0.8em; color: var(--text-secondary);">Changes</div>
+                        </div>
+                    </div>
+
+                    ${totalChanges > 0 ? `
+                        <div style="margin-bottom: 15px; font-size: 0.9em;">
+                            ${wt.files.added.length > 0 ? `<div style="color: #4caf50;">✚ ${wt.files.added.length} added</div>` : ''}
+                            ${wt.files.modified.length > 0 ? `<div style="color: #ff9800;">✎ ${wt.files.modified.length} modified</div>` : ''}
+                            ${wt.files.deleted.length > 0 ? `<div style="color: #f44336;">✖ ${wt.files.deleted.length} deleted</div>` : ''}
+                        </div>
+                    ` : ''}
+
+                    ${wt.hasChanges || wt.behind > 0 ? `
+                        <button onclick="syncWorktree('${wt.agentId}')"
+                            style="width: 100%; padding: 10px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.95em;">
+                            🔄 Sync with Main
+                        </button>
+                    ` : ''}
+                </div>
+            `;
+        })
+        .join('');
+}
+
+async function syncWorktree(agentId) {
+    try {
+        const res = await fetch(`/api/worktrees/${agentId}/sync`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ targetBranch: 'main' })
+        });
+
+        if (res.ok) {
+            await showAlert('Worktree synced successfully!', 'Success', '✅');
+            fetchWorktrees();
+        } else {
+            const data = await res.json();
+            await showAlert(`Error: ${data.error}`, 'Error', '❌');
+        }
+    } catch (error) {
+        await showAlert(`Failed to sync worktree: ${error.message}`, 'Error', '❌');
+    }
+}
+
+async function syncAllWorktrees() {
+    try {
+        const res = await fetch('/api/worktrees/sync-all', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ targetBranch: 'main' })
+        });
+
+        if (res.ok) {
+            await showAlert('All worktrees synced successfully!', 'Success', '✅');
+            fetchWorktrees();
+        } else {
+            const data = await res.json();
+            await showAlert(`Error: ${data.error}`, 'Error', '❌');
+        }
+    } catch (error) {
+        await showAlert(`Failed to sync all worktrees: ${error.message}`, 'Error', '❌');
+    }
+}
+
 // Initialize dashboard on page load
 document.addEventListener('DOMContentLoaded', () => {
     initDarkMode();
     fetchInitialData();
     fetchEpics();
     fetchTasks();
-    // Refresh epics and tasks every 10 seconds
+    fetchWorktrees();
+    // Refresh epics, tasks, and worktrees every 10 seconds
     setInterval(() => {
         fetchEpics();
         fetchTasks();
+        fetchWorktrees();
     }, 10000);
 });

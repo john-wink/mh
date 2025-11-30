@@ -53,7 +53,7 @@
     "commitFrequency": "per-file",
     "testBeforeCommit": true,
     "testCommand": "php artisan test --filter",
-    "autoMerge": false,
+    "autoMerge": true,
     "requireCodeReview": true,
     "branchNaming": "agent/{agentId}/{taskId}-{timestamp}",
     "checkpoints": {

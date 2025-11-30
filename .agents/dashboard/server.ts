@@ -375,6 +375,105 @@ app.post('/api/planning/create-suggestion', async (req, res) => {
   }
 });
 
+// Git Worktree Endpoints
+app.get('/api/worktrees', async (req, res) => {
+  try {
+    const worktreeManager = agentManager.getWorktreeManager();
+
+    if (!worktreeManager) {
+      return res.json({
+        enabled: false,
+        message: 'Git worktrees are not enabled',
+        worktrees: [],
+      });
+    }
+
+    const statuses = await worktreeManager.getAllWorktreeStatuses();
+    const agents = config.agents;
+
+    // Combine worktree status with agent information
+    const worktreesWithAgents = Array.from(statuses.entries()).map(([agentId, status]) => {
+      const agent = agents.find((a) => a.id === agentId);
+      const agentStatus = agentManager.getAgent(agentId)?.getStatus();
+
+      return {
+        agentId,
+        agentName: agent?.name || agentId,
+        team: agent?.team,
+        ...status,
+        currentTasks: agentStatus?.currentTasks || [],
+        isWorking: (agentStatus?.currentTasks || []).length > 0,
+      };
+    });
+
+    res.json({
+      enabled: true,
+      worktrees: worktreesWithAgents,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
+  }
+});
+
+app.get('/api/worktrees/:agentId', async (req, res) => {
+  try {
+    const worktreeManager = agentManager.getWorktreeManager();
+
+    if (!worktreeManager) {
+      return res.status(404).json({ error: 'Git worktrees are not enabled' });
+    }
+
+    const status = await worktreeManager.getWorktreeStatus(req.params.agentId);
+    const agent = config.agents.find((a) => a.id === req.params.agentId);
+    const agentStatus = agentManager.getAgent(req.params.agentId)?.getStatus();
+
+    res.json({
+      agentId: req.params.agentId,
+      agentName: agent?.name || req.params.agentId,
+      team: agent?.team,
+      ...status,
+      currentTasks: agentStatus?.currentTasks || [],
+      isWorking: (agentStatus?.currentTasks || []).length > 0,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
+  }
+});
+
+app.post('/api/worktrees/:agentId/sync', async (req, res) => {
+  try {
+    const worktreeManager = agentManager.getWorktreeManager();
+
+    if (!worktreeManager) {
+      return res.status(404).json({ error: 'Git worktrees are not enabled' });
+    }
+
+    const { targetBranch = 'main' } = req.body;
+    await worktreeManager.syncWorktreeWithMain(req.params.agentId, targetBranch);
+
+    res.json({ success: true, message: `Synced ${req.params.agentId} with ${targetBranch}` });
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
+  }
+});
+
+app.post('/api/worktrees/sync-all', async (req, res) => {
+  try {
+    const worktreeManager = agentManager.getWorktreeManager();
+
+    if (!worktreeManager) {
+      return res.status(404).json({ error: 'Git worktrees are not enabled' });
+    }
+
+    const { targetBranch = 'main' } = req.body;
+    await worktreeManager.syncAllWorktrees(targetBranch);
+
+    res.json({ success: true, message: `Synced all worktrees with ${targetBranch}` });
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
+  }
+});
+
 // WebSocket connection for real-time updates
 wss.on('connection', (ws) => {
   console.log('Client connected to dashboard');

@@ -167,4 +167,200 @@ export class GitWorktreeManager {
       throw error;
     }
   }
+
+  /**
+   * Get detailed status information for a worktree
+   */
+  async getWorktreeStatus(agentId: string): Promise<{
+    exists: boolean;
+    path?: string;
+    branch?: string;
+    hasChanges: boolean;
+    ahead: number;
+    behind: number;
+    files: {
+      added: string[];
+      modified: string[];
+      deleted: string[];
+    };
+  }> {
+    const worktreePath = this.worktrees.get(agentId);
+
+    if (!worktreePath || !existsSync(worktreePath)) {
+      return {
+        exists: false,
+        hasChanges: false,
+        ahead: 0,
+        behind: 0,
+        files: { added: [], modified: [], deleted: [] },
+      };
+    }
+
+    try {
+      // Get current branch
+      const { stdout: branch } = await execAsync('git branch --show-current', {
+        cwd: worktreePath,
+      });
+
+      // Get status
+      const { stdout: status } = await execAsync('git status --porcelain', {
+        cwd: worktreePath,
+      });
+
+      // Parse changed files
+      const files = { added: [] as string[], modified: [] as string[], deleted: [] as string[] };
+      const lines = status.split('\n').filter((line) => line.trim());
+
+      for (const line of lines) {
+        const statusCode = line.substring(0, 2);
+        const file = line.substring(3);
+
+        if (statusCode.includes('A')) files.added.push(file);
+        else if (statusCode.includes('M')) files.modified.push(file);
+        else if (statusCode.includes('D')) files.deleted.push(file);
+        else if (statusCode === '??') files.added.push(file);
+      }
+
+      // Get commits ahead/behind main
+      let ahead = 0;
+      let behind = 0;
+
+      try {
+        const { stdout: revList } = await execAsync('git rev-list --left-right --count main...HEAD', {
+          cwd: worktreePath,
+        });
+
+        const [behindStr, aheadStr] = revList.trim().split('\t');
+        behind = parseInt(behindStr) || 0;
+        ahead = parseInt(aheadStr) || 0;
+      } catch {
+        // Ignore errors (e.g., no main branch)
+      }
+
+      return {
+        exists: true,
+        path: worktreePath,
+        branch: branch.trim(),
+        hasChanges: lines.length > 0 || ahead > 0,
+        ahead,
+        behind,
+        files,
+      };
+    } catch (error) {
+      console.error(chalk.red(`❌ Failed to get status for ${agentId}:`, error));
+      return {
+        exists: true,
+        path: worktreePath,
+        hasChanges: false,
+        ahead: 0,
+        behind: 0,
+        files: { added: [], modified: [], deleted: [] },
+      };
+    }
+  }
+
+  /**
+   * Sync a worktree with main branch (pull latest changes)
+   */
+  async syncWorktreeWithMain(agentId: string, targetBranch: string = 'main'): Promise<void> {
+    const worktreePath = this.worktrees.get(agentId);
+
+    if (!worktreePath) {
+      throw new Error(`No worktree found for ${agentId}`);
+    }
+
+    try {
+      // Fetch latest from main repo
+      await execAsync(`git fetch origin ${targetBranch}`, {
+        cwd: this.projectRoot,
+      });
+
+      // Merge main into worktree branch
+      await execAsync(`git merge origin/${targetBranch} --no-edit`, {
+        cwd: worktreePath,
+      });
+
+      console.log(chalk.green(`✓ Synced ${agentId}'s worktree with ${targetBranch}`));
+    } catch (error) {
+      // Try alternative sync method if no remote
+      try {
+        // Update main in project root
+        await execAsync(`git checkout ${targetBranch}`, {
+          cwd: this.projectRoot,
+        });
+
+        await execAsync('git pull || true', {
+          cwd: this.projectRoot,
+        });
+
+        // Get latest commit hash from main
+        const { stdout: mainCommit } = await execAsync('git rev-parse HEAD', {
+          cwd: this.projectRoot,
+        });
+
+        // Merge that commit into worktree
+        await execAsync(`git merge ${mainCommit.trim()} --no-edit`, {
+          cwd: worktreePath,
+        });
+
+        console.log(chalk.green(`✓ Synced ${agentId}'s worktree with ${targetBranch}`));
+      } catch (syncError) {
+        console.error(chalk.red(`❌ Failed to sync worktree for ${agentId}:`, syncError));
+        throw syncError;
+      }
+    }
+  }
+
+  /**
+   * Get all worktrees with their status
+   */
+  async getAllWorktreeStatuses(): Promise<
+    Map<
+      string,
+      {
+        exists: boolean;
+        path?: string;
+        branch?: string;
+        hasChanges: boolean;
+        ahead: number;
+        behind: number;
+        files: { added: string[]; modified: string[]; deleted: string[] };
+      }
+    >
+  > {
+    const statuses = new Map();
+
+    for (const agentId of this.worktrees.keys()) {
+      const status = await this.getWorktreeStatus(agentId);
+      statuses.set(agentId, status);
+    }
+
+    return statuses;
+  }
+
+  /**
+   * Sync all worktrees with main
+   */
+  async syncAllWorktrees(targetBranch: string = 'main'): Promise<void> {
+    console.log(chalk.blue(`🔄 Syncing all worktrees with ${targetBranch}...`));
+
+    const agentIds = Array.from(this.worktrees.keys());
+
+    for (const agentId of agentIds) {
+      try {
+        await this.syncWorktreeWithMain(agentId, targetBranch);
+      } catch (error) {
+        console.error(chalk.red(`❌ Failed to sync ${agentId}:`, error));
+      }
+    }
+
+    console.log(chalk.green('✓ All worktrees synced'));
+  }
+
+  /**
+   * Get registered worktrees map
+   */
+  getWorktrees(): Map<string, string> {
+    return this.worktrees;
+  }
 }
