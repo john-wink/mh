@@ -206,7 +206,7 @@ export class ClaudeCodeExecutor {
         // Create shell script that will run in new Terminal
         const shellScript = `#!/bin/bash
 cd "${config.workingDirectory}"
-claude "$(cat '${promptPath}')"
+claude --dangerously-skip-permissions "$(cat '${promptPath}')"
 rm -rf "${tempDir}"
 `;
 
