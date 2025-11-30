@@ -1,0 +1,11 @@
+[
+  {
+    "inputTokens": 405,
+    "outputTokens": 8192,
+    "cachedTokens": 0,
+    "timestamp": "2025-11-30T13:34:03.666Z",
+    "model": "claude-sonnet-4-5-20250929",
+    "agentId": "team-1-lead",
+    "taskId": "TASK-001"
+  }
+]
