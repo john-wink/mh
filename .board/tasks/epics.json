@@ -20,7 +20,7 @@
   },
   {
     "id": "EPIC-002",
-    "status": "in_progress",
+    "status": "completed",
     "createdAt": "2025-11-30T14:53:29.322Z",
     "taskIds": [
       "TASK-007",
@@ -33,6 +33,7 @@
     "estimatedStoryPoints": 5,
     "team": 1,
     "sprint": 1,
-    "startedAt": "2025-11-30T16:46:27.151Z"
+    "startedAt": "2025-11-30T16:46:27.151Z",
+    "completedAt": "2025-11-30T17:20:12.960Z"
   }
 ]

@@ -140,54 +140,57 @@ export class ClaudeCodeExecutor {
     taskId: string;
     initialPrompt: string;
   }): Promise<ExecutionResult> {
-    console.log(chalk.blue(`\n📋 Starting Claude Code...`));
+    console.log(chalk.blue(`\n📋 Starting Claude Code in new Terminal window...`));
     console.log(chalk.gray(`   Working Directory: ${config.workingDirectory}`));
     console.log(chalk.gray(`   MCP Config: ${this.mcpConfigPath}`));
 
     return new Promise((resolve) => {
-      // Build Claude Code command
-      // Claude Code is invoked with just the prompt as argument
-      const args = [config.initialPrompt];
-
       console.log(chalk.cyan(`\n┌─────────────────────────────────────────────────────┐`));
       console.log(chalk.cyan(`│  Claude Code Session for ${config.agentName.padEnd(24)} │`));
       console.log(chalk.cyan(`│  Task: ${config.taskId.padEnd(40)} │`));
       console.log(chalk.cyan(`└─────────────────────────────────────────────────────┘\n`));
 
-      // Spawn Claude Code process
-      // Using 'inherit' stdio so user can see and interact
-      const claudeProcess: ChildProcess = spawn('claude', args, {
-        cwd: config.workingDirectory,
-        stdio: 'inherit', // Pass through stdin/stdout/stderr
-        shell: false, // Don't use shell to avoid interpreting prompt as commands
+      // Escape single quotes in the prompt for AppleScript
+      const escapedPrompt = config.initialPrompt.replace(/'/g, "'\\''");
+
+      // Build command to run in new Terminal window
+      const command = `cd '${config.workingDirectory}' && claude '${escapedPrompt}'`;
+
+      // AppleScript to open new Terminal window and run Claude Code
+      const appleScript = `
+        tell application "Terminal"
+          do script "${command.replace(/"/g, '\\"')}"
+          activate
+        end tell
+      `;
+
+      // Execute AppleScript to open new Terminal window
+      const osascriptProcess = spawn('osascript', ['-e', appleScript], {
+        stdio: 'pipe',
       });
 
-      let output = '';
-
-      // Handle process completion
-      claudeProcess.on('close', (code) => {
-        const exitCode = code || 0;
-
-        if (exitCode === 0) {
-          console.log(chalk.green(`\n✓ Claude Code session completed successfully`));
+      osascriptProcess.on('close', (code) => {
+        if (code === 0) {
+          console.log(chalk.green(`\n✓ Claude Code session started in new Terminal window`));
+          console.log(chalk.yellow(`   Note: Close the Terminal window when you're done with the task`));
           resolve({
             success: true,
-            exitCode,
-            output,
+            exitCode: 0,
+            output: 'Claude Code started in new Terminal window',
           });
         } else {
-          console.log(chalk.red(`\n✗ Claude Code session exited with code ${exitCode}`));
+          console.log(chalk.red(`\n✗ Failed to open new Terminal window (exit code ${code})`));
           resolve({
             success: false,
-            exitCode,
-            output,
-            error: `Process exited with code ${exitCode}`,
+            exitCode: code || 1,
+            output: '',
+            error: `Failed to open Terminal window`,
           });
         }
       });
 
-      claudeProcess.on('error', (error) => {
-        console.error(chalk.red(`\n❌ Failed to start Claude Code:`), error.message);
+      osascriptProcess.on('error', (error) => {
+        console.error(chalk.red(`\n❌ Failed to start Terminal:`), error.message);
         resolve({
           success: false,
           exitCode: 1,
