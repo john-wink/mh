@@ -1,0 +1,109 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Database\Factories;
+
+use App\Enums\GamePhase;
+use App\Models\Game;
+use App\Models\Organization;
+use Illuminate\Database\Eloquent\Factories\Factory;
+
+/**
+ * @extends Factory<Game>
+ */
+final class GameFactory extends Factory
+{
+    /**
+     * @return array<string, mixed>
+     */
+    public function definition(): array
+    {
+        return [
+            'organization_id' => Organization::factory(),
+            'name' => fake()->words(3, true),
+            'description' => fake()->optional()->paragraph(),
+            'current_phase' => GamePhase::Setup,
+            'state_metadata' => null,
+            'config' => [
+                'max_players' => fake()->numberBetween(10, 100),
+                'duration_minutes' => fake()->numberBetween(60, 180),
+            ],
+            'rules' => [
+                'allow_jokers' => fake()->boolean(),
+                'safe_zone_time' => fake()->numberBetween(5, 15),
+            ],
+        ];
+    }
+
+    public function forOrganization(int $organizationId): self
+    {
+        return $this->state(fn (array $attributes): array => [
+            'organization_id' => $organizationId,
+        ]);
+    }
+
+    public function inSetup(): self
+    {
+        return $this->state(fn (array $attributes): array => [
+            'current_phase' => GamePhase::Setup,
+            'setup_started_at' => now(),
+        ]);
+    }
+
+    public function inPreGame(): self
+    {
+        return $this->state(fn (array $attributes): array => [
+            'current_phase' => GamePhase::PreGame,
+            'setup_started_at' => now()->subHours(2),
+            'pre_game_started_at' => now()->subHour(),
+        ]);
+    }
+
+    public function active(): self
+    {
+        return $this->state(fn (array $attributes): array => [
+            'current_phase' => GamePhase::Active,
+            'setup_started_at' => now()->subHours(3),
+            'pre_game_started_at' => now()->subHours(2),
+            'game_started_at' => now()->subHour(),
+        ]);
+    }
+
+    public function inEndgame(): self
+    {
+        return $this->state(fn (array $attributes): array => [
+            'current_phase' => GamePhase::Endgame,
+            'setup_started_at' => now()->subHours(5),
+            'pre_game_started_at' => now()->subHours(4),
+            'game_started_at' => now()->subHours(3),
+            'game_ended_at' => now()->subHour(),
+        ]);
+    }
+
+    public function inPostGame(): self
+    {
+        return $this->state(fn (array $attributes): array => [
+            'current_phase' => GamePhase::PostGame,
+            'setup_started_at' => now()->subHours(6),
+            'pre_game_started_at' => now()->subHours(5),
+            'game_started_at' => now()->subHours(4),
+            'game_ended_at' => now()->subHours(2),
+            'post_game_started_at' => now()->subHour(),
+        ]);
+    }
+
+    public function withConfig(array $config): self
+    {
+        return $this->state(fn (array $attributes): array => [
+            'config' => array_merge($attributes['config'] ?? [], $config),
+        ]);
+    }
+
+    public function withRules(array $rules): self
+    {
+        return $this->state(fn (array $attributes): array => [
+            'rules' => array_merge($attributes['rules'] ?? [], $rules),
+        ]);
+    }
+}
