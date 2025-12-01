@@ -135,7 +135,7 @@
   },
   {
     "id": "TASK-011",
-    "status": "in_progress",
+    "status": "completed",
     "title": "Design and implement game state data models",
     "description": "Create database schemas and data models for game phases (setup, pre-game, active, endgame), game state transitions, and event entities. Include fields for state metadata, timestamps, and transition rules. Implement basic CRUD operations and state validation logic.",
     "storyPoints": 3,
@@ -144,7 +144,8 @@
     "sprint": 1,
     "epicId": "EPIC-003",
     "assignedTo": "team-4-lead",
-    "startedAt": "2025-12-01T01:49:56.529Z"
+    "startedAt": "2025-12-01T01:49:56.529Z",
+    "completedAt": "2025-12-01T02:01:52.616Z"
   },
   {
     "id": "TASK-012",
