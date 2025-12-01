@@ -9,9 +9,6 @@ use App\Models\Organization;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\RestoreBulkAction;
-use Filament\Tables\Filters\TrashedFilter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 
@@ -191,7 +188,7 @@ it('can delete organization', function (): void {
     $organization = Organization::factory()->create();
 
     Livewire::test(ListOrganizations::class)
-        ->callAction(DeleteAction::class, $organization);
+        ->callTableAction('delete', $organization);
 
     $this->assertSoftDeleted($organization);
 });
@@ -200,7 +197,7 @@ it('can bulk delete organizations', function (): void {
     $organizations = Organization::factory()->count(10)->create();
 
     Livewire::test(ListOrganizations::class)
-        ->callAction(DeleteAction::class, $organizations);
+        ->callTableBulkAction('delete', $organizations);
 
     foreach ($organizations as $organization) {
         $this->assertSoftDeleted($organization);
@@ -213,7 +210,7 @@ it('can filter trashed organizations', function (): void {
     $trashedOrganization->delete();
 
     Livewire::test(ListOrganizations::class)
-        ->filterTable(TrashedFilter::getDefaultName(), false)
+        ->filterTable('trashed', false)
         ->loadTable()
         ->assertCanSeeTableRecords([$trashedOrganization])
         ->assertCanNotSeeTableRecords([$organization]);
@@ -224,7 +221,10 @@ it('can restore trashed organizations', function (): void {
     $organization->delete();
 
     Livewire::test(ListOrganizations::class)
-        ->callAction(RestoreBulkAction::class, [$organization]);
+        ->filterTable('trashed', false)
+        ->loadTable()
+        ->assertCanSeeTableRecords([$organization])
+        ->callTableBulkAction('restore', [$organization]);
 
     expect($organization->fresh()->trashed())->toBeFalse();
 });

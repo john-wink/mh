@@ -15,19 +15,19 @@ final class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $o = Organization::create([
+        $o = Organization::query()->create([
             'name' => 'CyQuer',
             'slug' => 'cyquer',
         ]);
 
         // Create super admin permission
-        $superAdminPermission = Permission::create([
+        $superAdminPermission = Permission::query()->create([
             'slug' => 'super-admin',
             'name' => 'Super Admin',
         ]);
 
         // Create admin role with permission
-        $adminRole = Role::create([
+        $adminRole = Role::query()->create([
             'name' => 'Super Admin',
             'slug' => 'super-admin',
             'organization_id' => $o->getKey(),
@@ -35,7 +35,7 @@ final class DatabaseSeeder extends Seeder
         $adminRole->permissions()->attach($superAdminPermission);
 
         // Create user with admin role
-        $user = User::create([
+        $user = User::query()->create([
             'organization_id' => $o->getKey(),
             'name' => 'John Wink',
             'email' => 'johnwink@posteo.de',

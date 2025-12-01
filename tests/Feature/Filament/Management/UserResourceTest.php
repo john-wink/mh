@@ -9,8 +9,6 @@ use App\Models\Organization;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
-use Filament\Actions\RestoreBulkAction;
-use Filament\Tables\Filters\TrashedFilter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 
@@ -181,7 +179,7 @@ it('can retrieve data on edit page', function (): void {
     $user = User::factory()->create(['organization_id' => $this->organization->id]);
 
     Livewire::test(EditUser::class, ['record' => $user->getRouteKey()])
-        ->assertFormSet([
+        ->assertSchemaStateSet([
             'organization_id' => $user->organization_id,
             'name' => $user->name,
             'email' => $user->email,
@@ -247,7 +245,7 @@ it('can filter trashed users', function (): void {
     $trashedUser->delete();
 
     Livewire::test(ListUsers::class)
-        ->filterTable(TrashedFilter::getDefaultName(), false)
+        ->filterTable('trashed', false)
         ->loadTable()
         ->assertCanSeeTableRecords([$trashedUser])
         ->assertCanNotSeeTableRecords([$user]);
@@ -258,10 +256,10 @@ it('can restore trashed users', function (): void {
     $user->delete();
 
     Livewire::test(ListUsers::class)
-        ->filterTable(TrashedFilter::getDefaultName(), false)
+        ->filterTable('trashed', false)
         ->loadTable()
         ->assertCanSeeTableRecords([$user])
-        ->callAction(RestoreBulkAction::getDefaultName(), [$user]);
+        ->callTableBulkAction('restore', [$user]);
 
     expect($user->fresh()->trashed())->toBeFalse();
 });

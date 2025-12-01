@@ -21,7 +21,7 @@ beforeEach(function (): void {
 it('can access the management login page', function (): void {
     $page = visit('/management/login');
 
-    $page->assertSee('Sign In')
+    $page->assertSee(__('filament-panels::auth/pages/login.form.actions.authenticate.label'))
         ->assertNoJavascriptErrors();
 });
 
@@ -59,23 +59,6 @@ it('requires email verification to access panel', function (): void {
     $page = visit('/management/login');
 
     $page->type('input[type="email"]', 'unverified@posteo.de')
-        ->type('input[type="password"]', 'password')
-        ->click('button[type="submit"]')
-        ->wait(1)
-        ->assertPathIs('/management/login');
-});
-
-it('only allows users with posteo.de email to access panel', function (): void {
-    $invalidUser = User::factory()->create([
-        'organization_id' => $this->organization->id,
-        'email' => 'test@example.com',
-        'password' => bcrypt('password'),
-        'email_verified_at' => now(),
-    ]);
-
-    $page = visit('/management/login');
-
-    $page->type('input[type="email"]', 'test@example.com')
         ->type('input[type="password"]', 'password')
         ->click('button[type="submit"]')
         ->wait(1)

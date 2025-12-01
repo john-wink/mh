@@ -9,7 +9,11 @@ use App\Models\Organization;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\Testing\TestAction;
+use Filament\Tables\Filters\TrashedFilter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
@@ -84,8 +88,13 @@ it('validates required fields on create', function (): void {
 });
 
 it('can assign permissions to role', function (): void {
-    $role = Role::factory()->create(['organization_id' => $this->organization->id]);
-    $permissions = Permission::factory()->count(3)->create();
+    [$role, $permissions] = DB::transaction(function (): array {
+
+        $role = Role::factory()->create(['organization_id' => $this->organization->id]);
+        $permissions = Permission::factory()->count(3)->create();
+
+        return [$role, $permissions];
+    }, 100);
 
     Livewire::test(EditRole::class, ['record' => $role->getRouteKey()])
         ->fillForm([
@@ -98,10 +107,13 @@ it('can assign permissions to role', function (): void {
 });
 
 it('can delete role', function (): void {
-    $role = Role::factory()->create(['organization_id' => $this->organization->id]);
+    $role = DB::transaction(function () {
+        return Role::factory()->create(['organization_id' => $this->organization->id]);
+    }, 3);
 
     Livewire::test(ListRoles::class)
-        ->callTableAction('delete', $role);
+        ->assertActionVisible(TestAction::make(DeleteAction::getDefaultName())->table($role))
+        ->callAction(TestAction::make(DeleteAction::getDefaultName())->table($role));
 
     $this->assertSoftDeleted($role);
 });
@@ -111,6 +123,9 @@ it('can restore trashed roles', function (): void {
     $role->delete();
 
     Livewire::test(ListRoles::class)
+        ->filterTable(TrashedFilter::getDefaultName(), false)
+        ->loadTable()
+        ->assertCanSeeTableRecords([$role])
         ->callTableBulkAction('restore', [$role]);
 
     expect($role->fresh()->trashed())->toBeFalse();

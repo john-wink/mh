@@ -122,7 +122,7 @@ it('revoked tokens cannot authenticate requests', function (): void {
 
     // Verify token is deleted from database
     expect(PersonalAccessToken::query()->find($token->accessToken->id))->toBeNull();
-})->skip('Token caching in test environment');
+});
 
 it('authenticates user through API guard', function (): void {
     $user = User::factory()->for($this->organization)->create();

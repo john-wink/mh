@@ -7,80 +7,84 @@ use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
-    $this->organization = Organization::factory()->create();
-    $this->otherOrganization = Organization::factory()->create();
+    DB::transaction(function (): void {
+        $this->organization = Organization::factory()->create();
+        $this->otherOrganization = Organization::factory()->create();
 
-    // Create super admin permission
-    $this->superAdminPermission = Permission::factory()->create([
-        'slug' => 'super-admin',
-        'name' => 'Super Admin',
-    ]);
+        // Create super admin permission
+        $this->superAdminPermission = Permission::factory()->create([
+            'slug' => 'super-admin',
+            'name' => 'Super Admin',
+        ]);
 
-    // Create organization permissions
-    $this->organizationsViewPermission = Permission::factory()->create([
-        'slug' => 'organizations.view',
-        'name' => 'View Organizations',
-    ]);
+        // Create organization permissions
+        $this->organizationsViewPermission = Permission::factory()->create([
+            'slug' => 'organizations.view',
+            'name' => 'View Organizations',
+        ]);
 
-    $this->organizationsUpdatePermission = Permission::factory()->create([
-        'slug' => 'organizations.update',
-        'name' => 'Update Organizations',
-    ]);
+        $this->organizationsUpdatePermission = Permission::factory()->create([
+            'slug' => 'organizations.update',
+            'name' => 'Update Organizations',
+        ]);
 
-    // Create user permissions
-    $this->usersViewPermission = Permission::factory()->create([
-        'slug' => 'users.view',
-        'name' => 'View Users',
-    ]);
+        // Create user permissions
+        $this->usersViewPermission = Permission::factory()->create([
+            'slug' => 'users.view',
+            'name' => 'View Users',
+        ]);
 
-    $this->usersCreatePermission = Permission::factory()->create([
-        'slug' => 'users.create',
-        'name' => 'Create Users',
-    ]);
+        $this->usersCreatePermission = Permission::factory()->create([
+            'slug' => 'users.create',
+            'name' => 'Create Users',
+        ]);
 
-    $this->usersUpdatePermission = Permission::factory()->create([
-        'slug' => 'users.update',
-        'name' => 'Update Users',
-    ]);
+        $this->usersUpdatePermission = Permission::factory()->create([
+            'slug' => 'users.update',
+            'name' => 'Update Users',
+        ]);
 
-    $this->usersDeletePermission = Permission::factory()->create([
-        'slug' => 'users.delete',
-        'name' => 'Delete Users',
-    ]);
+        $this->usersDeletePermission = Permission::factory()->create([
+            'slug' => 'users.delete',
+            'name' => 'Delete Users',
+        ]);
 
-    // Create super admin role
-    $this->superAdminRole = Role::factory()->for($this->organization)->create([
-        'slug' => 'super-admin',
-        'name' => 'Super Admin',
-    ]);
-    $this->superAdminRole->permissions()->attach($this->superAdminPermission);
+        // Create super admin role
+        $this->superAdminRole = Role::factory()->for($this->organization)->create([
+            'slug' => 'super-admin',
+            'name' => 'Super Admin',
+        ]);
+        $this->superAdminRole->permissions()->attach($this->superAdminPermission);
 
-    // Create organization admin role
-    $this->orgAdminRole = Role::factory()->for($this->organization)->create([
-        'slug' => 'organization-admin',
-        'name' => 'Organization Admin',
-    ]);
-    $this->orgAdminRole->permissions()->attach([
-        $this->organizationsViewPermission->id,
-        $this->organizationsUpdatePermission->id,
-        $this->usersViewPermission->id,
-        $this->usersCreatePermission->id,
-        $this->usersUpdatePermission->id,
-        $this->usersDeletePermission->id,
-    ]);
+        // Create organization admin role
+        $this->orgAdminRole = Role::factory()->for($this->organization)->create([
+            'slug' => 'organization-admin',
+            'name' => 'Organization Admin',
+        ]);
+        $this->orgAdminRole->permissions()->attach([
+            $this->organizationsViewPermission->id,
+            $this->organizationsUpdatePermission->id,
+            $this->usersViewPermission->id,
+            $this->usersCreatePermission->id,
+            $this->usersUpdatePermission->id,
+            $this->usersDeletePermission->id,
+        ]);
 
-    // Create regular user role
-    $this->userRole = Role::factory()->for($this->organization)->create([
-        'slug' => 'user',
-        'name' => 'User',
-    ]);
-    $this->userRole->permissions()->attach([
-        $this->usersViewPermission->id,
-    ]);
+        // Create regular user role
+        $this->userRole = Role::factory()->for($this->organization)->create([
+            'slug' => 'user',
+            'name' => 'User',
+        ]);
+        $this->userRole->permissions()->attach([
+            $this->usersViewPermission->id,
+        ]);
+    }, 3);
+
 });
 
 it('allows super admin to view any organization', function (): void {

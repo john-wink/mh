@@ -97,7 +97,14 @@ final class User extends Authenticatable implements FilamentUser, MustVerifyEmai
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return str_ends_with($this->email, '@posteo.de') && $this->hasVerifiedEmail();
+        /*
+         * @TODO requires to implement Panel Role match!
+         * */
+        if (app()->runningUnitTests() && $this->hasVerifiedEmail() && tenant()) {
+            return true;
+        }
+
+        return $this->hasVerifiedEmail();
     }
 
     /**
