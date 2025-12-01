@@ -55,7 +55,11 @@ it('has many users through pivot table', function (): void {
 
 it('has many permissions through pivot table', function (): void {
     $role = Role::factory()->create();
-    $permissions = Permission::factory()->count(3)->create();
+    $permissions = collect([
+        Permission::factory()->create(['slug' => 'perm-1', 'name' => 'Permission 1']),
+        Permission::factory()->create(['slug' => 'perm-2', 'name' => 'Permission 2']),
+        Permission::factory()->create(['slug' => 'perm-3', 'name' => 'Permission 3']),
+    ]);
 
     $role->permissions()->attach($permissions);
 
