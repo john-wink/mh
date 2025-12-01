@@ -110,5 +110,80 @@
     "assignedTo": "team-1-lead",
     "startedAt": "2025-11-30T16:58:12.891Z",
     "completedAt": "2025-11-30T17:04:12.277Z"
+  },
+  {
+    "id": "TASK-009",
+    "status": "pending",
+    "title": "Basic Game Rules Engine and Configuration",
+    "description": "Implement the foundational rules engine that can load, validate, and apply game rules. Create configuration system for rule templates and basic rule enforcement mechanisms that integrate with the event system.",
+    "storyPoints": 10,
+    "dependencies": [],
+    "team": 4,
+    "sprint": 1
+  },
+  {
+    "id": "TASK-010",
+    "status": "pending",
+    "title": "Filament Resource Configuration for Game Management",
+    "description": "Create comprehensive Filament admin resources for managing games, participants, zones, and basic game settings. Include form builders, table configurations, and relationship management interfaces for game masters.",
+    "storyPoints": 8,
+    "dependencies": [],
+    "team": 1,
+    "sprint": 1
+  },
+  {
+    "id": "TASK-011",
+    "status": "pending",
+    "title": "Design and implement game state data models",
+    "description": "Create database schemas and data models for game phases (setup, pre-game, active, endgame), game state transitions, and event entities. Include fields for state metadata, timestamps, and transition rules. Implement basic CRUD operations and state validation logic.",
+    "storyPoints": 3,
+    "dependencies": [],
+    "team": 4,
+    "sprint": 1,
+    "epicId": "EPIC-003"
+  },
+  {
+    "id": "TASK-012",
+    "status": "pending",
+    "title": "Implement core game state management engine",
+    "description": "Build the central state management system that handles game phase transitions, maintains current state, and enforces transition rules. Include state persistence, rollback capabilities, and thread-safe state operations. Implement state change notifications and validation.",
+    "storyPoints": 5,
+    "dependencies": [],
+    "team": 4,
+    "sprint": 1,
+    "epicId": "EPIC-003"
+  },
+  {
+    "id": "TASK-013",
+    "status": "pending",
+    "title": "Develop event detection and processing system",
+    "description": "Create the event system that can detect automatic game events, process manual event creation, and maintain event queue. Implement event validation, priority handling, and event execution logic. Include event rollback and error handling mechanisms.",
+    "storyPoints": 4,
+    "dependencies": [],
+    "team": 4,
+    "sprint": 1,
+    "epicId": "EPIC-003"
+  },
+  {
+    "id": "TASK-014",
+    "status": "pending",
+    "title": "Build event timeline interface and API endpoints",
+    "description": "Implement REST API endpoints for game state management and event operations. Create the event timeline UI component that displays chronological events, allows manual event creation, and shows state transitions. Include real-time updates and filtering capabilities.",
+    "storyPoints": 3,
+    "dependencies": [],
+    "team": 4,
+    "sprint": 1,
+    "epicId": "EPIC-003"
+  },
+  {
+    "id": "TASK-015",
+    "status": "pending",
+    "title": "Implement comprehensive testing suite",
+    "description": "Create unit tests for state management logic, integration tests for event processing workflows, and end-to-end tests for complete game scenarios. Include edge case testing for state transitions, concurrent event handling, and error recovery scenarios.",
+    "storyPoints": 1,
+    "dependencies": [],
+    "team": 4,
+    "sprint": 1,
+    "epicId": "EPIC-003"
   }
 ]

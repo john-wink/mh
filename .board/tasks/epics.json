@@ -36,5 +36,34 @@
     "sprint": 1,
     "startedAt": "2025-11-30T16:46:27.151Z",
     "completedAt": "2025-11-30T17:20:12.960Z"
+  },
+  {
+    "id": "EPIC-003",
+    "status": "in_progress",
+    "createdAt": "2025-12-01T01:46:00.151Z",
+    "taskIds": [
+      "TASK-011",
+      "TASK-012",
+      "TASK-013",
+      "TASK-014",
+      "TASK-015"
+    ],
+    "title": "Game State Management and Event System",
+    "description": "Implement the core game engine including game phases (setup, pre-game, active, endgame), event detection and processing, rule enforcement, and state transitions. Includes automatic event triggers, manual event creation, and the event timeline interface.",
+    "estimatedStoryPoints": 16,
+    "team": 4,
+    "sprint": 1,
+    "startedAt": "2025-12-01T01:49:07.337Z"
+  },
+  {
+    "id": "EPIC-004",
+    "status": "pending",
+    "createdAt": "2025-12-01T01:46:03.786Z",
+    "taskIds": [],
+    "title": "Interactive Map Interface with Zone Management",
+    "description": "Build the primary map interface using Mapbox GL JS with real-time position display, zone creation/editing tools, and layer management. Includes different zone types (play areas, restricted zones, safe zones, exit points) with visibility rules and dynamic updates.",
+    "estimatedStoryPoints": 18,
+    "team": 3,
+    "sprint": 1
   }
 ]

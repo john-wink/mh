@@ -578,7 +578,7 @@ function renderTasks(tasks, stats) {
     taskStats = stats;
 
     const isDark = document.body.classList.contains('dark-mode');
-    const hideCompleted = document.getElementById('hideCompleted')?.checked || true;
+    const hideCompleted = document.getElementById('hideCompleted')?.checked ?? true;
 
     // Filter tasks based on checkbox
     const filteredTasks = hideCompleted ? tasks.filter(t => t.status !== 'completed') : tasks;
