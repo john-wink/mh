@@ -9,7 +9,7 @@
       "cwd": "/Users/johnwink/Herd/bountyops/.agents",
       "env": {
         "BOARD_DIRECTORY": "/Users/johnwink/Herd/bountyops/.board/tasks",
-        "AGENT_ID": ""
+        "AGENT_ID": "/Users/johnwink/Herd/bountyops/.worktrees/team-1-backend-2"
       }
     }
   }
