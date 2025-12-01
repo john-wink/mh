@@ -123,7 +123,7 @@
   },
   {
     "id": "TASK-010",
-    "status": "in_progress",
+    "status": "completed",
     "title": "Filament Resource Configuration for Game Management",
     "description": "Create comprehensive Filament admin resources for managing games, participants, zones, and basic game settings. Include form builders, table configurations, and relationship management interfaces for game masters.",
     "storyPoints": 8,
@@ -131,7 +131,8 @@
     "team": 1,
     "sprint": 1,
     "assignedTo": "team-1-lead",
-    "startedAt": "2025-12-01T01:50:01.536Z"
+    "startedAt": "2025-12-01T01:50:01.536Z",
+    "completedAt": "2025-12-01T02:07:06.301Z"
   },
   {
     "id": "TASK-011",

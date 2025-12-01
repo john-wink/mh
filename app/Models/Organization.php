@@ -94,6 +94,14 @@ final class Organization extends Model
     }
 
     /**
+     * @return HasMany<Game, $this>
+     */
+    public function games(): HasMany
+    {
+        return $this->hasMany(Game::class);
+    }
+
+    /**
      * Scope to filter active organizations
      *
      * @param  Builder<self>  $query
