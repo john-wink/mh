@@ -18,7 +18,7 @@ final class PermissionFactory extends Factory
      */
     public function definition(): array
     {
-        $name = fake()->randomElement([
+        $name = fake()->unique()->randomElement([
             'View Organizations',
             'Create Organizations',
             'Edit Organizations',

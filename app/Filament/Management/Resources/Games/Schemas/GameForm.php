@@ -79,19 +79,19 @@ final class GameForm
 
                 Section::make('Game Configuration')
                     ->schema([
-                        KeyValue::make('ruleset')
-                            ->label('Ruleset Configuration')
+                        KeyValue::make('config')
+                            ->label('Game Configuration')
+                            ->keyLabel('Config Key')
+                            ->valueLabel('Value')
+                            ->reorderable()
+                            ->helperText('Configure game settings (e.g., max_players, duration_minutes)')
+                            ->columnSpanFull(),
+                        KeyValue::make('rules')
+                            ->label('Game Rules')
                             ->keyLabel('Rule Name')
                             ->valueLabel('Value')
                             ->reorderable()
-                            ->helperText('Define game rules (e.g., max_players, game_duration, capture_radius)')
-                            ->columnSpanFull(),
-                        KeyValue::make('settings')
-                            ->label('Game Settings')
-                            ->keyLabel('Setting Name')
-                            ->valueLabel('Value')
-                            ->reorderable()
-                            ->helperText('Configure game settings (e.g., enable_gps_tracking, enable_chat)')
+                            ->helperText('Define game rules (e.g., allow_jokers, safe_zone_time)')
                             ->columnSpanFull(),
                     ])->collapsible(),
             ]);

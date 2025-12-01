@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\GamePhase;
+use App\Enums\GameStatus;
 use App\Traits\BelongsToTenant;
 use App\Traits\TableNameTrait;
 use App\Traits\UuidTrait;
@@ -85,9 +86,13 @@ final class Game extends Model
             'id' => 'integer',
             'organization_id' => 'integer',
             'name' => 'string',
+            'slug' => 'string',
             'description' => 'string',
+            'status' => GameStatus::class,
             'current_phase' => GamePhase::class,
             'state_metadata' => 'array',
+            'start_time' => 'datetime',
+            'end_time' => 'datetime',
             'setup_started_at' => 'datetime',
             'pre_game_started_at' => 'datetime',
             'game_started_at' => 'datetime',
@@ -119,6 +124,16 @@ final class Game extends Model
     public function events(): HasMany
     {
         return $this->hasMany(GameEvent::class);
+    }
+
+    /**
+     * Get the participants for this game
+     *
+     * @return HasMany<GameParticipant, $this>
+     */
+    public function participants(): HasMany
+    {
+        return $this->hasMany(GameParticipant::class);
     }
 
     /**

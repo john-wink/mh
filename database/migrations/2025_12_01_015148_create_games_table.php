@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\GamePhase;
+use App\Enums\GameStatus;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -20,15 +21,19 @@ return new class extends Migration
             $table->foreignId('organization_id')->constrained()->cascadeOnDelete();
 
             $table->string('name');
+            $table->string('slug')->nullable();
             $table->text('description')->nullable();
 
-            // Current game phase/state
+            // Game status and phase
+            $table->string('status')->default(GameStatus::Setup->value);
             $table->string('current_phase')->default(GamePhase::Setup->value);
 
             // State metadata - JSON to store additional phase-specific data
             $table->json('state_metadata')->nullable();
 
             // Game timing
+            $table->timestamp('start_time')->nullable();
+            $table->timestamp('end_time')->nullable();
             $table->timestamp('setup_started_at')->nullable();
             $table->timestamp('pre_game_started_at')->nullable();
             $table->timestamp('game_started_at')->nullable();
@@ -43,6 +48,8 @@ return new class extends Migration
             $table->softDeletes();
 
             // Indexes
+            $table->index('slug');
+            $table->index('status');
             $table->index('organization_id');
             $table->index('current_phase');
             $table->index(['organization_id', 'current_phase']);
