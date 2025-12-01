@@ -71,7 +71,7 @@
   },
   {
     "id": "TASK-006",
-    "status": "in_progress",
+    "status": "completed",
     "title": "Comprehensive Testing Suite",
     "description": "Write unit tests for models and services, feature tests for authentication flows and tenant isolation, create test database seeders for different tenant scenarios, and implement automated testing for role-based access control.",
     "storyPoints": 2,
@@ -80,7 +80,8 @@
     "sprint": 1,
     "epicId": "EPIC-001",
     "assignedTo": "team-1-backend-2",
-    "startedAt": "2025-12-01T01:31:50.806Z"
+    "startedAt": "2025-12-01T01:31:50.806Z",
+    "completedAt": "2025-12-01T01:41:34.001Z"
   },
   {
     "id": "TASK-007",
